@@ -10,6 +10,7 @@ import PerfilScreen from './src/screens/PerfilScreen';
 import EvaluacionesScreen from './src/screens/EvaluacionesScreen';
 import IncendiosMitigadosScreen from './src/screens/IncendiosMitigadosScreen';
 import HistorialScreen from './src/screens/HistorialScreen';
+import NecesidadesCapacitacionesScreen from './src/screens/NecesidadesCapacitacionesScreen';
 
 
 const Stack = createNativeStackNavigator();
@@ -24,6 +25,8 @@ export default function App() {
           <Stack.Screen name="Evaluaciones" component={EvaluacionesScreen} />
           <Stack.Screen name="IncendiosMitigados" component={IncendiosMitigadosScreen} />
           <Stack.Screen name="Historial" component={HistorialScreen} />
+          <Stack.Screen name="NecesidadesCapacitaciones" component={NecesidadesCapacitacionesScreen} />
+
 
         </Stack.Navigator>
         <StatusBar style="auto" />

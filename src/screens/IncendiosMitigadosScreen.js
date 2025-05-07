@@ -25,27 +25,9 @@ const IncendiosMitigadosScreen = () => {
 
   const onChangeSearch = (text) => {
     setSearch(text);
-
-    if (text.length > 0) {
-      Animated.parallel([
-        Animated.timing(reiniciarOpacity, { toValue: 1, duration: 300, useNativeDriver: true }),
-        Animated.timing(searchWidthAnim, { toValue: 0.8, duration: 300, useNativeDriver: false }),
-      ]).start();
-    } else {
-      Animated.parallel([
-        Animated.timing(reiniciarOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
-        Animated.timing(searchWidthAnim, { toValue: 1, duration: 300, useNativeDriver: false }),
-      ]).start();
-    }
   };
 
-  const limpiarBusqueda = () => {
-    setSearch('');
-    Animated.parallel([
-      Animated.timing(reiniciarOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
-      Animated.timing(searchWidthAnim, { toValue: 1, duration: 300, useNativeDriver: false }),
-    ]).start();
-  };
+
 
   return (
     <View style={styles.container}>
@@ -66,12 +48,6 @@ const IncendiosMitigadosScreen = () => {
             placeholderTextColor={colors.darkBlue}
           />
         </Animated.View>
-
-        <Animated.View style={{ opacity: reiniciarOpacity }}>
-          <TouchableOpacity onPress={limpiarBusqueda} style={styles.reiniciarButton}>
-            <Ionicons name="close" size={20} color={colors.white} />
-          </TouchableOpacity>
-        </Animated.View>
       </View>
 
       <FlatList
@@ -80,7 +56,7 @@ const IncendiosMitigadosScreen = () => {
         ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>
-              No se encontraron resultados.{"\n"}Presione la X para reiniciar la búsqueda.
+              No se encontraron resultados.
             </Text>
           </View>
         )}

@@ -158,13 +158,11 @@ export default function PerfilScreen() {
 
         {/* Historial */}
         <TouchableOpacity style={styles.sectionCard} activeOpacity={0.9} onPress={() => navigation.navigate('Historial')}>
-          <Text style={styles.sectionTitle}>Historial</Text>
           <Animated.FlatList
             data={historialData}
             renderItem={renderCarouselItem}
             keyExtractor={(item, index) => index.toString()}
             horizontal
-            pagingEnabled
             showsHorizontalScrollIndicator={false}
             onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollXHistorial } } }], { useNativeDriver: false })}
             onMomentumScrollEnd={(e) => {
@@ -178,7 +176,6 @@ export default function PerfilScreen() {
 
         {/* Necesidades y Capacitaciones */}
         <TouchableOpacity style={styles.sectionCard} activeOpacity={0.9} onPress={() => navigation.navigate('NecesidadesCapacitaciones')}>
-          <Text style={styles.sectionTitle}>Necesidades y Capacitaciones</Text>
           <Animated.FlatList
             data={necesidadesData}
             renderItem={renderCarouselItem}

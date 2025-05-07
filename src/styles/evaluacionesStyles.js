@@ -123,9 +123,10 @@ export default StyleSheet.create({
   },
   datePicker: {
     padding: 14,
-    backgroundColor: colors.inputBackground,
-    borderRadius: 12,
-    marginBottom: 12,
+    backgroundColor: colors.darkBlue,
+    borderRadius: 1,
+    marginBottom: 10,
+    
   },
   applyButton: {
     backgroundColor: colors.darkBlue,

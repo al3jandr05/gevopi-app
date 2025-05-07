@@ -3,22 +3,20 @@ import { View, Text, TextInput, TouchableOpacity, FlatList, Animated, Pressable,
 import colors from '../themes/colors';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
-import styles from '../styles/evaluacionesStyles';
+import styles from '../styles/necesidades_capacitacionesStyles';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 
-const EvaluacionesScreen = () => {
+const NecesidadesCapacitacionesScreen = () => {
   const navigation = useNavigation();
 
   const [search, setSearch] = useState('');
-
   const [filtrosAplicados, setFiltrosAplicados] = useState({
-    estado: null,
+    tipo: null,
     desde: null,
     hasta: null,
   });
-
   const [filtrosTemp, setFiltrosTemp] = useState({
-    estado: null,
+    tipo: null,
     desde: null,
     hasta: null,
   });
@@ -26,19 +24,20 @@ const EvaluacionesScreen = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [pickerType, setPickerType] = useState(null);
   const [pickerValue, setPickerValue] = useState(null);
+  const [mostrarRangoFechas, setMostrarRangoFechas] = useState(false);
 
   const panelAnim = useRef(new Animated.Value(500)).current;
   const reiniciarOpacity = useRef(new Animated.Value(0)).current;
   const searchWidthAnim = useRef(new Animated.Value(1)).current;
 
-  const evaluaciones = [
-    { titulo: "Evaluación física post-incendio", fechaRealizada: "2025-03-10", fechaResultado: "2025-03-12" },
-    { titulo: "Evaluación psicológica inicial", fechaRealizada: "2025-03-05", fechaResultado: null },
-    { titulo: "Evaluación estrés crónico", fechaRealizada: "2025-02-15", fechaResultado: "2025-02-17" },
-    { titulo: "Revisión mensual", fechaRealizada: "2025-02-01", fechaResultado: null },
+  const historial = [
+    { tipo: "capacitacion", titulo: "Primeros Auxilios", descripcion: "Curso básico de RCP", fecha: "2025-6-20" },
+    { tipo: "necesidad", titulo: "Botiquín Personal", descripcion: "Necesita reabastecimiento", fecha: "2025-03-18" },
+    { tipo: "capacitacion", titulo: "Rescate en incendios", descripcion: "Técnicas de intervención", fecha: "2025-03-15" },
+    { tipo: "necesidad", titulo: "Mascarilla de seguridad", descripcion: "Sustitución por desgaste", fecha: "2024-11-02" },
   ];
 
-  const hayFiltrosActivos = filtrosAplicados.estado !== null || filtrosAplicados.desde || filtrosAplicados.hasta;
+  const hayFiltrosActivos = filtrosAplicados.tipo !== null || filtrosAplicados.desde || filtrosAplicados.hasta;
 
   const abrirPanel = () => {
     setFiltrosTemp({ ...filtrosAplicados });
@@ -57,11 +56,7 @@ const EvaluacionesScreen = () => {
 
   const reiniciarFiltros = () => {
     setSearch('');
-    setFiltrosAplicados({
-      estado: null,
-      desde: null,
-      hasta: null,
-    });
+    setFiltrosAplicados({ tipo: null, desde: null, hasta: null });
 
     Animated.parallel([
       Animated.timing(reiniciarOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
@@ -87,17 +82,14 @@ const EvaluacionesScreen = () => {
     ]).start();
   }
 
-  const filtrados = evaluaciones.filter(e => {
-    const estado = filtrosAplicados.estado;
+  const filtrados = historial.filter(e => {
+    const tipo = filtrosAplicados.tipo;
     const desde = filtrosAplicados.desde;
     const hasta = filtrosAplicados.hasta;
 
-    const tieneResultado = !!e.fechaResultado;
+    if (tipo && e.tipo !== tipo) return false;
 
-    if (estado === "Realizada" && tieneResultado) return false;
-    if (estado === "Entregada" && !tieneResultado) return false;
-
-    const fecha = new Date(e.fechaRealizada);
+    const fecha = new Date(e.fecha);
     if (desde && fecha < desde) return false;
     if (hasta && fecha > hasta) return false;
 
@@ -112,7 +104,7 @@ const EvaluacionesScreen = () => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.backArrow}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Evaluaciones</Text>
+        <Text style={styles.headerTitle}>Necesidades y Capacitaciones</Text>
       </View>
 
       <View style={styles.filtersRow}>
@@ -122,7 +114,7 @@ const EvaluacionesScreen = () => {
 
         <Animated.View style={{ flex: searchWidthAnim }}>
           <TextInput
-            placeholder="Buscar evaluación..."
+            placeholder="Buscar necesidad o capacitación..."
             style={styles.input}
             value={search}
             onChangeText={setSearch}
@@ -139,30 +131,19 @@ const EvaluacionesScreen = () => {
       <FlatList
         data={filtrados}
         keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => {
-          const entregada = item.fechaResultado !== null;
-          return (
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>{item.titulo}</Text>
-              <Text style={styles.cardSubtitle}>Fecha realizada: {item.fechaRealizada}</Text>
-              {entregada && <Text style={styles.cardSubtitle}>Resultado entregado: {item.fechaResultado}</Text>}
-              {entregada && (
-                <TouchableOpacity style={styles.verButton} onPress={() => navigation.navigate('ResultadoEvaluacion', { evaluacion: item })}>
-                  <Text style={styles.verButtonText}>Ver resultado</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          );
-        }}
         ListEmptyComponent={() => (
-          <View style={{ padding: 30, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ color: colors.darkBlue, textAlign: 'center', fontSize: 16 }}>
-              No se encontraron resultados.
-            </Text>
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No se encontraron resultados.{"\n"}Presione la X para reiniciar los filtros.</Text>
+          </View>
+        )}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>{item.titulo}</Text>
+            <Text style={styles.cardSubtitle}>{item.descripcion}</Text>
+            <Text style={styles.cardFecha}>Fecha: {new Date(item.fecha).toLocaleDateString()}</Text>
           </View>
         )}
       />
-
 
       {showFilters && (
         <View style={styles.modalOverlay}>
@@ -170,29 +151,26 @@ const EvaluacionesScreen = () => {
           <Animated.View style={[styles.modalContent, { transform: [{ translateY: panelAnim }] }]}>
             <Text style={styles.modalTitle}>Filtros</Text>
 
-            <Text style={styles.filterLabel}>Estado de Evaluación</Text>
+            <Text style={styles.filterLabel}>Tipo de Historial</Text>
             <View style={styles.chipsRow}>
-              {["Realizada", "Entregada"].map(tipo => (
+              {["necesidad", "capacitacion"].map(tipo => (
                 <Pressable
                   key={tipo}
-                  style={[styles.choiceChip, filtrosTemp.estado === tipo && styles.choiceChipSelected]}
-                  onPress={() => setFiltrosTemp(prev => ({ ...prev, estado: tipo }))}
+                  style={[styles.choiceChip, filtrosTemp.tipo === tipo && styles.choiceChipSelected]}
+                  onPress={() => setFiltrosTemp(prev => ({ ...prev, tipo }))}
                 >
-                  <Text style={{ color: filtrosTemp.estado === tipo ? colors.white : colors.dark }}>{tipo}</Text>
+                  <Text style={{ color: filtrosTemp.tipo === tipo ? colors.white : colors.dark }}>{tipo.charAt(0).toUpperCase() + tipo.slice(1)}</Text>
                 </Pressable>
               ))}
             </View>
 
-            {/* Solo "Desde" para Realizada */}
-            {filtrosTemp.estado === "Realizada" && (
-              <TouchableOpacity onPress={() => abrirPicker("Desde")} style={styles.datePicker}>
-                <Text>Desde: {filtrosTemp.desde ? filtrosTemp.desde.toLocaleDateString() : "----"}</Text>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity onPress={() => setMostrarRangoFechas(!mostrarRangoFechas)} style={styles.rangoFechaToggle}>
+              <Text style={{ color: colors.darkBlue, fontWeight: 'bold' }}>Rango de Fechas</Text>
+              <Ionicons name={mostrarRangoFechas ? "chevron-up" : "chevron-down"} size={20} color={colors.darkBlue} />
+            </TouchableOpacity>
 
-            {/* Desde y Hasta para Entregada → en la misma fila */}
-            {filtrosTemp.estado === "Entregada" && (
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            {mostrarRangoFechas && (
+              <>
                 <TouchableOpacity onPress={() => abrirPicker("Desde")} style={styles.datePicker}>
                   <Text>Desde: {filtrosTemp.desde ? filtrosTemp.desde.toLocaleDateString() : "----"}</Text>
                 </TouchableOpacity>
@@ -200,7 +178,7 @@ const EvaluacionesScreen = () => {
                 <TouchableOpacity onPress={() => abrirPicker("Hasta")} style={styles.datePicker}>
                   <Text>Hasta: {filtrosTemp.hasta ? filtrosTemp.hasta.toLocaleDateString() : "----"}</Text>
                 </TouchableOpacity>
-              </View>
+              </>
             )}
 
             <TouchableOpacity onPress={aplicarFiltros} style={styles.applyButton}>
@@ -210,7 +188,6 @@ const EvaluacionesScreen = () => {
         </View>
       )}
 
-      {/* DateTimePicker bien hecho */}
       <Modal visible={pickerType !== null} transparent animationType="fade">
         <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }} onPress={() => setPickerType(null)} />
         <View style={{ backgroundColor: colors.white, padding: 16, borderRadius: 12, margin: 20 }}>
@@ -224,12 +201,8 @@ const EvaluacionesScreen = () => {
           />
         </View>
       </Modal>
-
-
-
-
     </View>
   );
 };
 
-export default EvaluacionesScreen;
+export default NecesidadesCapacitacionesScreen;

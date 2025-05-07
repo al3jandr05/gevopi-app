@@ -1,27 +1,30 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, Animated, Pressable } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { FontAwesome5, Ionicons } from '@expo/vector-icons';
-import styles from '../styles/historialStyles';
+import { View, Text, TextInput, TouchableOpacity, FlatList, Animated, Pressable, Modal, Platform } from 'react-native';
 import colors from '../themes/colors';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { useNavigation } from '@react-navigation/native';
+import styles from '../styles/historialStyles';
+import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 
 const HistorialScreen = () => {
   const navigation = useNavigation();
-  const [search, setSearch] = useState('');
-  const [tipoFiltro, setTipoFiltro] = useState(null);
-  const [tempTipoFiltro, setTempTipoFiltro] = useState(null);
 
-  const [fechaDesde, setFechaDesde] = useState(null);
-  const [fechaHasta, setFechaHasta] = useState(null);
-  const [tempDesde, setTempDesde] = useState(null);
-  const [tempHasta, setTempHasta] = useState(null);
+  const [search, setSearch] = useState('');
+  const [filtrosAplicados, setFiltrosAplicados] = useState({
+    tipo: null,
+    desde: null,
+    hasta: null,
+  });
+  const [filtrosTemp, setFiltrosTemp] = useState({
+    tipo: null,
+    desde: null,
+    hasta: null,
+  });
 
   const [showFilters, setShowFilters] = useState(false);
-  const [showRangoFechas, setShowRangoFechas] = useState(false);
-
   const [pickerType, setPickerType] = useState(null);
   const [pickerValue, setPickerValue] = useState(null);
+  const [mostrarRangoFechas, setMostrarRangoFechas] = useState(false);
 
   const panelAnim = useRef(new Animated.Value(500)).current;
   const reiniciarOpacity = useRef(new Animated.Value(0)).current;
@@ -34,20 +37,26 @@ const HistorialScreen = () => {
     { tipo: "psicologico", titulo: "Ansiedad Leve", descripcion: "Revisión por exposición prolongada", fecha: "2024-11-02" },
   ];
 
-  const hayFiltrosActivos = tipoFiltro || fechaDesde || fechaHasta;
+  const hayFiltrosActivos = filtrosAplicados.tipo !== null || filtrosAplicados.desde || filtrosAplicados.hasta;
+
+  const abrirPanel = () => {
+    setFiltrosTemp({ ...filtrosAplicados });
+    setShowFilters(true);
+    Animated.timing(panelAnim, { toValue: 0, duration: 300, useNativeDriver: true }).start();
+  };
+
+  const cerrarPanel = () => {
+    Animated.timing(panelAnim, { toValue: 500, duration: 300, useNativeDriver: true }).start(() => setShowFilters(false));
+  };
 
   const aplicarFiltros = () => {
-    setTipoFiltro(tempTipoFiltro);
-    setFechaDesde(tempDesde);
-    setFechaHasta(tempHasta);
+    setFiltrosAplicados({ ...filtrosTemp });
     cerrarPanel();
   };
 
   const reiniciarFiltros = () => {
     setSearch('');
-    setTipoFiltro(null);
-    setFechaDesde(null);
-    setFechaHasta(null);
+    setFiltrosAplicados({ tipo: null, desde: null, hasta: null });
 
     Animated.parallel([
       Animated.timing(reiniciarOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
@@ -55,27 +64,14 @@ const HistorialScreen = () => {
     ]).start();
   };
 
-  const abrirPanel = () => {
-    setTempTipoFiltro(tipoFiltro);
-    setTempDesde(fechaDesde);
-    setTempHasta(fechaHasta);
-    setShowFilters(true);
-    Animated.timing(panelAnim, { toValue: 0, duration: 300, useNativeDriver: true }).start();
-  };
-
-  const cerrarPanel = () => {
-    setShowRangoFechas(false);
-    Animated.timing(panelAnim, { toValue: 500, duration: 300, useNativeDriver: true }).start(() => setShowFilters(false));
-  };
-
   const abrirPicker = (type) => {
     setPickerType(type);
-    setPickerValue(type === "Desde" ? tempDesde : tempHasta);
+    setPickerValue(type === "Desde" ? filtrosTemp.desde : filtrosTemp.hasta);
   };
 
   const onDateChange = (event, selectedDate) => {
-    if (pickerType === "Desde") setTempDesde(selectedDate);
-    else setTempHasta(selectedDate);
+    if (pickerType === "Desde") setFiltrosTemp(prev => ({ ...prev, desde: selectedDate }));
+    else setFiltrosTemp(prev => ({ ...prev, hasta: selectedDate }));
     setPickerType(null);
   };
 
@@ -86,14 +82,18 @@ const HistorialScreen = () => {
     ]).start();
   }
 
-  const filtrados = historial.filter(item => {
-    if (tipoFiltro && item.tipo !== tipoFiltro) return false;
+  const filtrados = historial.filter(e => {
+    const tipo = filtrosAplicados.tipo;
+    const desde = filtrosAplicados.desde;
+    const hasta = filtrosAplicados.hasta;
 
-    const fecha = new Date(item.fecha);
-    if (fechaDesde && fecha < fechaDesde) return false;
-    if (fechaHasta && fecha > fechaHasta) return false;
+    if (tipo && e.tipo !== tipo) return false;
 
-    if (search.length > 0 && !item.titulo.toLowerCase().includes(search.toLowerCase())) return false;
+    const fecha = new Date(e.fecha);
+    if (desde && fecha < desde) return false;
+    if (hasta && fecha > hasta) return false;
+
+    if (search.length > 0 && !e.titulo.toLowerCase().includes(search.toLowerCase())) return false;
 
     return true;
   });
@@ -118,7 +118,6 @@ const HistorialScreen = () => {
             style={styles.input}
             value={search}
             onChangeText={setSearch}
-            placeholderTextColor={colors.darkBlue}
           />
         </Animated.View>
 
@@ -134,16 +133,14 @@ const HistorialScreen = () => {
         keyExtractor={(item, index) => index.toString()}
         ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              No se encontraron resultados.{"\n"}Presione X para reiniciar los filtros.
-            </Text>
+            <Text style={styles.emptyText}>No se encontraron resultados.{"\n"}Presione la X para reiniciar los filtros.</Text>
           </View>
         )}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>{item.titulo}</Text>
             <Text style={styles.cardSubtitle}>{item.descripcion}</Text>
-            <Text style={styles.cardSubtitle}>Fecha: {new Date(item.fecha).toLocaleDateString()}</Text>
+            <Text style={styles.cardFecha}>Fecha: {new Date(item.fecha).toLocaleDateString()}</Text>
           </View>
         )}
       />
@@ -159,28 +156,27 @@ const HistorialScreen = () => {
               {["clinico", "psicologico"].map(tipo => (
                 <Pressable
                   key={tipo}
-                  style={[styles.choiceChip, tempTipoFiltro === tipo && styles.choiceChipSelected]}
-                  onPress={() => setTempTipoFiltro(tipo)}
+                  style={[styles.choiceChip, filtrosTemp.tipo === tipo && styles.choiceChipSelected]}
+                  onPress={() => setFiltrosTemp(prev => ({ ...prev, tipo }))}
                 >
-                  <Text style={{ color: tempTipoFiltro === tipo ? colors.white : colors.darkBlue }}>
-                    {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
-                  </Text>
+                  <Text style={{ color: filtrosTemp.tipo === tipo ? colors.white : colors.dark }}>{tipo.charAt(0).toUpperCase() + tipo.slice(1)}</Text>
                 </Pressable>
               ))}
             </View>
 
-            <TouchableOpacity onPress={() => setShowRangoFechas(!showRangoFechas)} style={styles.datePicker}>
-              <Text>Rango de Fecha {showRangoFechas ? "(Ocultar)" : "(Mostrar)"}</Text>
+            <TouchableOpacity onPress={() => setMostrarRangoFechas(!mostrarRangoFechas)} style={styles.rangoFechaToggle}>
+              <Text style={{ color: colors.darkBlue, fontWeight: 'bold' }}>Rango de Fechas</Text>
+              <Ionicons name={mostrarRangoFechas ? "chevron-up" : "chevron-down"} size={20} color={colors.darkBlue} />
             </TouchableOpacity>
 
-            {showRangoFechas && (
+            {mostrarRangoFechas && (
               <>
                 <TouchableOpacity onPress={() => abrirPicker("Desde")} style={styles.datePicker}>
-                  <Text>Desde: {tempDesde ? tempDesde.toLocaleDateString() : "----"}</Text>
+                  <Text>Desde: {filtrosTemp.desde ? filtrosTemp.desde.toLocaleDateString() : "----"}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => abrirPicker("Hasta")} style={styles.datePicker}>
-                  <Text>Hasta: {tempHasta ? tempHasta.toLocaleDateString() : "----"}</Text>
+                  <Text>Hasta: {filtrosTemp.hasta ? filtrosTemp.hasta.toLocaleDateString() : "----"}</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -192,14 +188,19 @@ const HistorialScreen = () => {
         </View>
       )}
 
-      {pickerType && (
-        <DateTimePicker
-          value={pickerValue || new Date()}
-          mode="date"
-          display="calendar"
-          onChange={onDateChange}
-        />
-      )}
+      <Modal visible={pickerType !== null} transparent animationType="fade">
+        <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }} onPress={() => setPickerType(null)} />
+        <View style={{ backgroundColor: colors.white, padding: 16, borderRadius: 12, margin: 20 }}>
+          <DateTimePicker
+            value={pickerValue || new Date()}
+            mode="date"
+            display={Platform.OS === 'ios' ? "inline" : "calendar"}
+            onChange={onDateChange}
+            textColor={Platform.OS === 'ios' ? colors.darkBlue : undefined}
+            themeVariant={Platform.OS === 'ios' ? "light" : undefined}
+          />
+        </View>
+      </Modal>
     </View>
   );
 };
