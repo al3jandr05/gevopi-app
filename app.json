@@ -1,10 +1,9 @@
 {
   "expo": {
-    "name": "gevopi_app",
-    "slug": "gevopi_app",
+    "name": "Gevopi",
+    "slug": "Gevopi",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
