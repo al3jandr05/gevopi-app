@@ -26,6 +26,8 @@ const EvaluacionesScreen = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [pickerType, setPickerType] = useState(null);
   const [pickerValue, setPickerValue] = useState(null);
+  const [mostrarRangoFechas, setMostrarRangoFechas] = useState(false);
+
 
   const panelAnim = useRef(new Animated.Value(500)).current;
   const reiniciarOpacity = useRef(new Animated.Value(0)).current;
@@ -147,7 +149,7 @@ const EvaluacionesScreen = () => {
               <Text style={styles.cardSubtitle}>Fecha realizada: {item.fechaRealizada}</Text>
               {entregada && <Text style={styles.cardSubtitle}>Resultado entregado: {item.fechaResultado}</Text>}
               {entregada && (
-                <TouchableOpacity style={styles.verButton} onPress={() => navigation.navigate('ResultadoEvaluacion', { evaluacion: item })}>
+                <TouchableOpacity style={styles.verButton} onPress={() => navigation.navigate('ResultadoEvaluaciones', { evaluacion: item })}>
                   <Text style={styles.verButtonText}>Ver resultado</Text>
                 </TouchableOpacity>
               )}
@@ -183,24 +185,27 @@ const EvaluacionesScreen = () => {
               ))}
             </View>
 
-            {/* Solo "Desde" para Realizada */}
-            {filtrosTemp.estado === "Realizada" && (
-              <TouchableOpacity onPress={() => abrirPicker("Desde")} style={styles.datePicker}>
-                <Text>Desde: {filtrosTemp.desde ? filtrosTemp.desde.toLocaleDateString() : "----"}</Text>
-              </TouchableOpacity>
-            )}
-
-            {/* Desde y Hasta para Entregada → en la misma fila */}
-            {filtrosTemp.estado === "Entregada" && (
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <TouchableOpacity onPress={() => abrirPicker("Desde")} style={styles.datePicker}>
-                  <Text>Desde: {filtrosTemp.desde ? filtrosTemp.desde.toLocaleDateString() : "----"}</Text>
+            {filtrosTemp.estado && (
+              <>
+                <TouchableOpacity onPress={() => setMostrarRangoFechas(!mostrarRangoFechas)} style={styles.rangoFechaToggle}>
+                  <Text style={{ color: colors.darkBlue, fontWeight: 'bold' }}>Rango de Fechas</Text>
+                  <Ionicons name={mostrarRangoFechas ? "chevron-up" : "chevron-down"} size={20} color={colors.darkBlue} />
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => abrirPicker("Hasta")} style={styles.datePicker}>
-                  <Text>Hasta: {filtrosTemp.hasta ? filtrosTemp.hasta.toLocaleDateString() : "----"}</Text>
-                </TouchableOpacity>
-              </View>
+                {mostrarRangoFechas && (
+                  <>
+                    <TouchableOpacity onPress={() => abrirPicker("Desde")} style={styles.datePicker}>
+                      <Text>Desde: {filtrosTemp.desde ? filtrosTemp.desde.toLocaleDateString() : "----"}</Text>
+                    </TouchableOpacity>
+
+                    {filtrosTemp.estado === "Entregada" && (
+                      <TouchableOpacity onPress={() => abrirPicker("Hasta")} style={styles.datePicker}>
+                        <Text>Hasta: {filtrosTemp.hasta ? filtrosTemp.hasta.toLocaleDateString() : "----"}</Text>
+                      </TouchableOpacity>
+                    )}
+                  </>
+                )}
+              </>
             )}
 
             <TouchableOpacity onPress={aplicarFiltros} style={styles.applyButton}>

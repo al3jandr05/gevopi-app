@@ -11,6 +11,7 @@ export default StyleSheet.create({
     alignItems: 'center',
     marginVertical: 20,
     paddingHorizontal: 20,
+    paddingTop: 50,
   },
   avatarWrapper: {
     position: 'relative',
@@ -170,7 +171,27 @@ export default StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.lighterCyan,
-  }
+  },
+  avatarImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+  },
+  
+  avatarPlaceholder: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: colors.lightCyan,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  avatarInitial: {
+    fontSize: 48,
+    color: colors.darkBlue,
+    fontWeight: 'bold',
+  },
   
   
   

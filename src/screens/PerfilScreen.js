@@ -53,7 +53,7 @@ const necesidadesData = [
 
 export default function PerfilScreen() {
   const [infoVisible, setInfoVisible] = useState(false);
-  const [stressLevel, setStressLevel] = useState(7);
+  const [stressLevel, setStressLevel] = useState(2);
   const [historialIndex, setHistorialIndex] = useState(0);
   const [necesidadesIndex, setNecesidadesIndex] = useState(0);
   const navigation = useNavigation();
@@ -82,9 +82,16 @@ export default function PerfilScreen() {
     }).start();
   }, []);
 
+
+
   const openInfo = () => {
     setInfoVisible(true);
     Animated.timing(panelAnim, { toValue: 0, duration: 300, useNativeDriver: true }).start();
+  };
+
+  const voluntario = {
+    nombre: "Juan Pérez",
+    fotoPerfil: null,
   };
 
   const closeInfo = () => {
@@ -92,10 +99,14 @@ export default function PerfilScreen() {
   };
 
   const getStressColor = (level) => {
-    if (level <= 3) return [colors.green, colors.cyan];
-    if (level <= 6) return [colors.yellow, colors.orange];
-    return [colors.red, '#d90429'];
+    if (level <= 3) return colors.green;
+    if (level <= 6) return colors.yellow;
+    if (level <= 8) return colors.orange;
+    return colors.red;
   };
+
+
+
 
   const renderDots = (count, activeIndex) => (
     <View style={styles.dotsContainer}>
@@ -125,14 +136,29 @@ export default function PerfilScreen() {
         {/* Perfil */}
         <View style={styles.perfilContainer}>
           <View style={styles.avatarWrapper}>
-            <View style={styles.avatarPlaceholder} />
+            {voluntario.fotoPerfil ? (
+              <Image source={{ uri: voluntario.fotoPerfil }} style={styles.avatarImage} />
+            ) : (
+              <View style={styles.avatarPlaceholder}>
+                <Text style={styles.avatarInitial}>
+                  {voluntario.nombre?.charAt(0).toUpperCase() ?? '-'}
+                </Text>
+              </View>
+            )}
             <View style={[styles.statusDot, { backgroundColor: 'green' }]} />
           </View>
-          <Text style={styles.name}>Juan Pérez</Text>
+
+          <Text style={styles.name}>{voluntario.nombre}</Text>
           <Text style={styles.stressText}>Nivel de estrés</Text>
           <View style={styles.stressBar}>
-            <View style={[styles.stressFill, { width: `${stressLevel * 10}%`, backgroundColor: getStressColor(stressLevel)[0] }]} />
+            <View style={[styles.stressFill, {
+              width: `${stressLevel * 10}%`, // 1 → 10% ... 10 → 100%
+              backgroundColor: getStressColor(stressLevel),
+            }]} />
           </View>
+
+
+
 
           <View style={styles.buttonsRow}>
             <TouchableOpacity style={styles.circleButton} onPress={openInfo}>

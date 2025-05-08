@@ -8,7 +8,8 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: colors.lighterCyan,
     padding: 20,
-    paddingTop: 40,
+    paddingTop: 60,
+
   },
   header: {
     flexDirection: 'row',
@@ -123,10 +124,19 @@ export default StyleSheet.create({
   },
   datePicker: {
     padding: 14,
-    backgroundColor: colors.darkBlue,
+    backgroundColor: colors.inputBackground,
     borderRadius: 1,
     marginBottom: 10,
     
+  },
+  rangoFechaToggle: {
+    padding: 14,
+    backgroundColor: '#c7cdd3',
+    borderRadius: 10,
+    marginBottom: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
   },
   applyButton: {
     backgroundColor: colors.darkBlue,

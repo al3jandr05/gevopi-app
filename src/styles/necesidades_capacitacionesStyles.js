@@ -6,7 +6,7 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: colors.lighterCyan,
     padding: 16,
-    paddingTop: 40,
+    paddingTop: 60,
   },
   header: {
     flexDirection: 'row',
