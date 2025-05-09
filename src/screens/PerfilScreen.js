@@ -1,9 +1,26 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, FlatList, Animated, Modal, Dimensions, Pressable } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  FlatList,
+  Animated,
+  Modal,
+  Dimensions,
+  Pressable,
+  Image,
+  ActivityIndicator,
+} from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import styles from '../styles/perfilStyles';
 import colors from '../themes/colors';
+
+import { getUsuarios } from '../services/usuarioService';
+import { getVoluntarioByUsuarioId } from '../services/voluntarioService';
+import { getLoggedEmail } from '../services/authService';
+import { getVoluntarioByEmail } from '../services/voluntarioService';
 
 const { width } = Dimensions.get('window');
 
@@ -19,17 +36,17 @@ const historialData = [
     screen: 'HistorialScreen',
     items: [
       { titulo: 'Fractura de Brazo', descripcion: 'Lesión durante el fuego en Samaipata', fecha: '20/5/2025' },
-      { titulo: 'Dolor en el Abdomen', descripcion: 'Síntoma después de estar 8 horas combatiendo el fuego', fecha: '19/5/2025' }
-    ]
+      { titulo: 'Dolor en el Abdomen', descripcion: 'Síntoma después de estar 8 horas combatiendo el fuego', fecha: '19/5/2025' },
+    ],
   },
   {
     titulo: 'Historial Psicológico',
     screen: 'HistorialScreen',
     items: [
       { titulo: 'Ansiedad', descripcion: 'Post incendio', fecha: '22/5/2025' },
-      { titulo: 'Estrés agudo', descripcion: 'Durante rescate', fecha: '18/5/2025' }
-    ]
-  }
+      { titulo: 'Estrés agudo', descripcion: 'Durante rescate', fecha: '18/5/2025' },
+    ],
+  },
 ];
 
 const necesidadesData = [
@@ -38,29 +55,30 @@ const necesidadesData = [
     screen: 'NecesidadesCapacitacionesScreen',
     items: [
       { titulo: 'Primeros Auxilios', descripcion: 'Curso básico de RCP' },
-      { titulo: 'Rescate en Incendios', descripcion: 'Técnicas de intervención' }
-    ]
+      { titulo: 'Rescate en Incendios', descripcion: 'Técnicas de intervención' },
+    ],
   },
   {
     titulo: 'Capacitaciones',
     screen: 'NecesidadesCapacitacionesScreen',
     items: [
       { titulo: 'Atención de víctimas', descripcion: 'Capacitación psicológica' },
-      { titulo: 'Técnicas de Evacuación', descripcion: 'Formación avanzada' }
-    ]
-  }
+      { titulo: 'Técnicas de Evacuación', descripcion: 'Formación avanzada' },
+    ],
+  },
 ];
 
 export default function PerfilScreen() {
   const [infoVisible, setInfoVisible] = useState(false);
-  const [stressLevel, setStressLevel] = useState(2);
+  const [voluntario, setVoluntario] = useState(null);
+  const [loadingVoluntario, setLoadingVoluntario] = useState(true);
   const [historialIndex, setHistorialIndex] = useState(0);
   const [necesidadesIndex, setNecesidadesIndex] = useState(0);
+
   const navigation = useNavigation();
   const panelAnim = useRef(new Animated.Value(500)).current;
   const scrollXHistorial = useRef(new Animated.Value(0)).current;
   const scrollXNecesidades = useRef(new Animated.Value(0)).current;
-
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useFocusEffect(
@@ -75,38 +93,38 @@ export default function PerfilScreen() {
   );
 
   useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 700,
-      useNativeDriver: true,
-    }).start();
+    const fetchVoluntario = async () => {
+      try {
+        const email = getLoggedEmail();
+        const voluntarioData = await getVoluntarioByEmail(email);
+  
+        if (!voluntarioData) {
+          console.warn('Voluntario no encontrado para:', email);
+          setVoluntario(null);
+          return;
+        }
+  
+        setVoluntario(voluntarioData);
+      } catch (error) {
+        console.error('Error al cargar voluntario:', error);
+      } finally {
+        setLoadingVoluntario(false);
+      }
+    };
+  
+    fetchVoluntario();
   }, []);
-
-
 
   const openInfo = () => {
     setInfoVisible(true);
     Animated.timing(panelAnim, { toValue: 0, duration: 300, useNativeDriver: true }).start();
   };
 
-  const voluntario = {
-    nombre: "Juan Pérez",
-    fotoPerfil: null,
-  };
-
   const closeInfo = () => {
-    Animated.timing(panelAnim, { toValue: 500, duration: 300, useNativeDriver: true }).start(() => setInfoVisible(false));
+    Animated.timing(panelAnim, { toValue: 500, duration: 300, useNativeDriver: true }).start(() =>
+      setInfoVisible(false)
+    );
   };
-
-  const getStressColor = (level) => {
-    if (level <= 3) return colors.green;
-    if (level <= 6) return colors.yellow;
-    if (level <= 8) return colors.orange;
-    return colors.red;
-  };
-
-
-
 
   const renderDots = (count, activeIndex) => (
     <View style={styles.dotsContainer}>
@@ -129,10 +147,26 @@ export default function PerfilScreen() {
     </View>
   );
 
+  if (loadingVoluntario) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.darkBlue} />
+        <Text style={styles.loadingText}>Cargando perfil...</Text>
+      </View>
+    );
+  }
+
+  if (!voluntario) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Voluntario no encontrado.</Text>
+      </View>
+    );
+  }
+
   return (
     <Animated.View style={[styles.container, { backgroundColor: colors.lighterCyan, opacity: fadeAnim }]}>
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
-
         {/* Perfil */}
         <View style={styles.perfilContainer}>
           <View style={styles.avatarWrapper}>
@@ -148,17 +182,7 @@ export default function PerfilScreen() {
             <View style={[styles.statusDot, { backgroundColor: 'green' }]} />
           </View>
 
-          <Text style={styles.name}>{voluntario.nombre}</Text>
-          <Text style={styles.stressText}>Nivel de estrés</Text>
-          <View style={styles.stressBar}>
-            <View style={[styles.stressFill, {
-              width: `${stressLevel * 10}%`, // 1 → 10% ... 10 → 100%
-              backgroundColor: getStressColor(stressLevel),
-            }]} />
-          </View>
-
-
-
+          <Text style={styles.name}>{voluntario.nombre} {voluntario.apellido}</Text>
 
           <View style={styles.buttonsRow}>
             <TouchableOpacity style={styles.circleButton} onPress={openInfo}>
@@ -218,7 +242,6 @@ export default function PerfilScreen() {
           />
           {renderDots(necesidadesData.length, necesidadesIndex)}
         </TouchableOpacity>
-
       </ScrollView>
 
       {/* Modal Información Voluntario */}
@@ -232,23 +255,19 @@ export default function PerfilScreen() {
 
           <View style={styles.infoRow}>
             <FontAwesome5 name="user" size={20} color={colors.darkBlue} />
-            <Text style={styles.infoText}>Juan Pérez</Text>
+            <Text style={styles.infoText}>{voluntario.nombre} {voluntario.apellido}</Text>
           </View>
           <View style={styles.infoRow}>
             <FontAwesome5 name="id-card" size={20} color={colors.darkBlue} />
-            <Text style={styles.infoText}>97841123</Text>
+            <Text style={styles.infoText}>{voluntario.ci}</Text>
           </View>
           <View style={styles.infoRow}>
             <FontAwesome5 name="phone" size={20} color={colors.darkBlue} />
-            <Text style={styles.infoText}>+591 76291234</Text>
+            <Text style={styles.infoText}>{voluntario.telefono}</Text>
           </View>
           <View style={styles.infoRow}>
             <FontAwesome5 name="tint" size={20} color={colors.darkBlue} />
-            <Text style={styles.infoText}>A+</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <FontAwesome5 name="fire" size={20} color={colors.darkBlue} />
-            <Text style={styles.infoText}>12</Text>
+            <Text style={styles.infoText}>{voluntario.tipo_sangre}</Text>
           </View>
         </Animated.View>
       </Modal>
