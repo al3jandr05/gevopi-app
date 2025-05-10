@@ -12,6 +12,7 @@ import IncendiosMitigadosScreen from './src/screens/IncendiosMitigadosScreen';
 import HistorialScreen from './src/screens/HistorialScreen';
 import NecesidadesCapacitacionesScreen from './src/screens/NecesidadesCapacitacionesScreen';
 import ResultadoEvaluacionesScreen from './src/screens/ResulltadoEvaluaciones';
+import SolicitudesScreen from './src/screens/SolicitudesScreen';
 
 
 const Stack = createNativeStackNavigator();
@@ -28,7 +29,7 @@ export default function App() {
           <Stack.Screen name="Historial" component={HistorialScreen} />
           <Stack.Screen name="NecesidadesCapacitaciones" component={NecesidadesCapacitacionesScreen} />
           <Stack.Screen name="ResultadoEvaluaciones" component={ResultadoEvaluacionesScreen} />
-
+          <Stack.Screen name="Solicitudes" component={SolicitudesScreen}  options={{ title: 'Solicitudes de Ayuda' }}/>
 
 
         </Stack.Navigator>

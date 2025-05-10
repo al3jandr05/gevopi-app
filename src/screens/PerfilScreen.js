@@ -3,6 +3,7 @@ import {
   View,
   Text,
   ScrollView,
+  TextInput,
   TouchableOpacity,
   FlatList,
   Animated,
@@ -16,11 +17,14 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import styles from '../styles/perfilStyles';
 import colors from '../themes/colors';
+import { Picker } from '@react-native-picker/picker';
+import * as Location from 'expo-location';
 
 import { getUsuarios } from '../services/usuarioService';
 import { getVoluntarioByUsuarioId } from '../services/voluntarioService';
 import { getLoggedEmail } from '../services/authService';
 import { getVoluntarioByEmail } from '../services/voluntarioService';
+import { crearSolicitudAyuda } from '../services/mutationsNOSQL';
 
 const { width } = Dimensions.get('window');
 
@@ -74,12 +78,73 @@ export default function PerfilScreen() {
   const [loadingVoluntario, setLoadingVoluntario] = useState(true);
   const [historialIndex, setHistorialIndex] = useState(0);
   const [necesidadesIndex, setNecesidadesIndex] = useState(0);
+  const [emergenciaVisible, setEmergenciaVisible] = useState(false);
 
   const navigation = useNavigation();
   const panelAnim = useRef(new Animated.Value(500)).current;
   const scrollXHistorial = useRef(new Animated.Value(0)).current;
   const scrollXNecesidades = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  const [tipo, setTipo] = useState('');
+  const [descripcion, setDescripcion] = useState('');
+  const [nivel, setNivel] = useState('');
+
+  const handleEnviarSolicitud = async () => {
+    if (!tipo || !descripcion || !nivel) {
+      alert('Por favor completa todos los campos');
+      return;
+    }
+  
+    try {
+      // 1. Permiso y ubicación
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Permiso de ubicación denegado');
+        return;
+      }
+  
+      const location = await Location.getCurrentPositionAsync({});
+      const latitud = location.coords.latitude;
+      const longitud = location.coords.longitude;
+  
+      // 2. Fecha actual ISO
+      const fecha = new Date().toISOString();
+  
+      // 3. Convertir nivel a ENUM
+      const nivelNum = parseInt(nivel);
+      const nivelEnum =
+        nivelNum <= 2 ? 'BAJO' : nivelNum <= 3 ? 'MEDIO' : 'ALTO';
+  
+      // 4. Verificar ID
+      if (!voluntario || !voluntario.id) {
+        alert('No se pudo obtener ID del voluntario');
+        return;
+      }
+  
+      // 5. Enviar a backend usando función modular
+      await crearSolicitudAyuda({
+        tipo,
+        descripcion,
+        nivelEmergencia: nivelEnum,
+        fecha,
+        voluntarioId: voluntario.id.toString(),
+        latitud,
+        longitud,
+      });
+  
+      // 6. Reset y feedback
+      alert('Solicitud de ayuda enviada correctamente');
+      setEmergenciaVisible(false);
+      setTipo('');
+      setDescripcion('');
+      setNivel('');
+    } catch (err) {
+      console.error('Error al enviar solicitud:', err);
+      alert('Error al enviar solicitud. Revisa consola.');
+    }
+  };
+  
 
   useFocusEffect(
     React.useCallback(() => {
@@ -167,6 +232,23 @@ export default function PerfilScreen() {
   return (
     <Animated.View style={[styles.container, { backgroundColor: colors.lighterCyan, opacity: fadeAnim }]}>
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 20, paddingTop: 10 }}>
+          <TouchableOpacity
+              style={{
+                position: 'absolute',
+                top: 40, // puedes ajustar según necesites
+                right: 20,
+                backgroundColor: 'red',
+                padding: 10,
+                borderRadius: 25,
+                zIndex: 20,
+                elevation: 5,
+              }}
+            onPress={() => setEmergenciaVisible(true)}
+          >
+            <FontAwesome5 name="bullhorn" size={20} color="white" />
+          </TouchableOpacity>
+        </View>
         {/* Perfil */}
         <View style={styles.perfilContainer}>
           <View style={styles.avatarWrapper}>
@@ -190,6 +272,9 @@ export default function PerfilScreen() {
             </TouchableOpacity>
             <TouchableOpacity style={styles.circleButton} onPress={() => navigation.navigate("Evaluaciones")}>
               <FontAwesome5 name="clipboard-list" size={20} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.circleButton} onPress={() => navigation.navigate("Solicitudes")}>
+              <FontAwesome5 name="list-alt" size={20} color="white" />
             </TouchableOpacity>
           </View>
         </View>
@@ -270,6 +355,90 @@ export default function PerfilScreen() {
             <Text style={styles.infoText}>{voluntario.tipo_sangre}</Text>
           </View>
         </Animated.View>
+      </Modal>
+
+      <Modal transparent visible={emergenciaVisible} animationType="fade">
+        <Pressable style={styles.modalBackdrop} onPress={() => setEmergenciaVisible(false)} />
+        <View style={[styles.modalContent]}>
+          <TouchableOpacity style={styles.closeButton} onPress={() => setEmergenciaVisible(false)}>
+            <FontAwesome5 name="times" size={20} color={colors.darkBlue} />
+          </TouchableOpacity>
+          <Text style={styles.modalTitle}>Reportar Emergencia</Text>
+
+          <View style={styles.infoRow}>
+            <Text>Tipo de emergencia:</Text>
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: colors.gray,
+                borderRadius: 8,
+                marginTop: 5,
+                width: '100%',
+                overflow: 'hidden',
+              }}
+            >
+              <Picker
+                selectedValue={tipo}
+                onValueChange={(itemValue) => setTipo(itemValue)}
+                style={{ width: '100%' }}
+              >
+                <Picker.Item label="Selecciona un tipo" value="" />
+                <Picker.Item label="Físico" value="Fisico" />
+                <Picker.Item label="Emocional" value="Emocional" />
+                <Picker.Item label="Recurso" value="Recurso" />
+              </Picker>
+            </View>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text>Descripción:</Text>
+            <TextInput
+              placeholder="Descripción breve"
+              style={styles.input}
+              value={descripcion}
+              onChangeText={setDescripcion}
+            />
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text>Nivel de emergencia:</Text>
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: colors.gray,
+                borderRadius: 8,
+                marginTop: 5,
+                width: '100%',
+                overflow: 'hidden',
+              }}
+            >
+              <Picker
+                selectedValue={nivel}
+                onValueChange={(itemValue) => setNivel(itemValue)}
+                style={{ width: '100%' }}
+              >
+                <Picker.Item label="Selecciona un nivel" value="" />
+                <Picker.Item label="Bajo" value="1" />
+                <Picker.Item label="Medio" value="3" />
+                <Picker.Item label="Alto" value="5" />
+              </Picker>
+            </View>
+          </View>
+
+          {/* Botón ENVIAR */}
+          <TouchableOpacity
+            style={{
+              backgroundColor: colors.darkBlue,
+              padding: 12,
+              marginTop: 20,
+              borderRadius: 8,
+              alignItems: 'center',
+            }}
+            onPress={handleEnviarSolicitud}
+          >
+            <Text style={{ color: 'white', fontWeight: 'bold' }}>ENVIAR</Text>
+          </TouchableOpacity>
+        </View>
       </Modal>
     </Animated.View>
   );
