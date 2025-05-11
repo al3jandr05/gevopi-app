@@ -25,6 +25,15 @@ export default StyleSheet.create({
     borderWidth: 3,
     borderColor: colors.blue,
   },
+  blueContainer: {
+    position: 'absolute',
+    top: 0,
+    width: width,
+    height: height * 0.6,
+    backgroundColor: colors.verdeOscuro,
+    borderBottomLeftRadius: 50,
+    borderBottomRightRadius: 50,
+  },
   statusDot: {
     width: 20,
     height: 20,
