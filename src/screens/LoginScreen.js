@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import colors from '../themes/colors';
 import { useNavigation } from '@react-navigation/native';
 import styles from '../styles/loginStyles';
+import { login } from '../services/authService'; // ← Asegúrate de tener esto creado
 
 const { height, width } = Dimensions.get('window');
 
