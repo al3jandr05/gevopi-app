@@ -17,7 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import colors from '../themes/colors';
 import { useNavigation } from '@react-navigation/native';
 import styles from '../styles/loginStyles';
-import { login } from '../services/authService';
+import { login, getLoggedEmail } from '../services/authService';
 
 const { height, width } = Dimensions.get('window');
 
@@ -81,7 +81,7 @@ export default function LoginScreen() {
     ]).start();
   }, []);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     Keyboard.dismiss();
 
     if (!username.trim() || !password.trim()) {
@@ -89,41 +89,56 @@ export default function LoginScreen() {
       return;
     }
 
-    Animated.parallel([
-      Animated.timing(subtitleOpacity, {
-        toValue: 0,
-        duration: 500,
-        useNativeDriver: false,
-      }),
-      Animated.timing(formOpacity, {
-        toValue: 0,
-        duration: 500,
-        useNativeDriver: false,
-      }),
-      Animated.timing(titleAnimY, {
-        toValue: -height,
-        duration: 500,
-        useNativeDriver: false,
-      }),
-      Animated.timing(titleColor, {
-        toValue: 1,
-        duration: 900,
-        useNativeDriver: false,
-      }),
-      Animated.timing(blueAnim, {
-        toValue: 0,
-        duration: 900,
-        useNativeDriver: false,
-      }),
-      Animated.timing(screenFadeOut, {
-        toValue: 0,
-        duration: 500,
-        useNativeDriver: false,
-      }),
-    ]).start(() => {
-      navigation.navigate('Perfil');
-    });
+    try {
+      const token = await login(username, password);
+      console.log("TOKEN:", token);
+
+      // Aquí puedes usar getLoggedEmail si quieres
+      const emailGuardado = getLoggedEmail();
+      console.log("EMAIL GUARDADO:", emailGuardado);
+
+      // Animaciones y navegación
+      Animated.parallel([
+        Animated.timing(subtitleOpacity, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: false,
+        }),
+        Animated.timing(formOpacity, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: false,
+        }),
+        Animated.timing(titleAnimY, {
+          toValue: -height,
+          duration: 500,
+          useNativeDriver: false,
+        }),
+        Animated.timing(titleColor, {
+          toValue: 1,
+          duration: 900,
+          useNativeDriver: false,
+        }),
+        Animated.timing(blueAnim, {
+          toValue: 0,
+          duration: 900,
+          useNativeDriver: false,
+        }),
+        Animated.timing(screenFadeOut, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: false,
+        }),
+      ]).start(() => {
+        navigation.navigate('Perfil');
+      });
+
+    } catch (error) {
+      Alert.alert('Error de autenticación', 'Usuario o contraseña incorrectos');
+      console.error("Error al iniciar sesión:", error);
+    }
   };
+
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);

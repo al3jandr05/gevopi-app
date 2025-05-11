@@ -14,7 +14,6 @@ export const login = async (email, contrasena) => {
   return authToken;
 };
 
-console.log(loggedEmail)
 
 
 export const getToken = () => authToken;
