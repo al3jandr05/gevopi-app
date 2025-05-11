@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  Animated, 
-  Dimensions, 
-  ActivityIndicator, 
-  KeyboardAvoidingView, 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Animated,
+  Dimensions,
+  ActivityIndicator,
+  KeyboardAvoidingView,
   Platform,
   ScrollView,
   Keyboard,
@@ -17,18 +17,18 @@ import { Ionicons } from '@expo/vector-icons';
 import colors from '../themes/colors';
 import { useNavigation } from '@react-navigation/native';
 import styles from '../styles/loginStyles';
-import { login } from '../services/authService'; // ← Asegúrate de tener esto creado
+import { login } from '../services/authService';
 
 const { height, width } = Dimensions.get('window');
 
 export default function LoginScreen() {
   const titleAnimY = useRef(new Animated.Value(0)).current;
   const blueAnim = useRef(new Animated.Value(-height)).current;
-  const subtitleOpacity = useRef(new Animated.Value(0)).current;
   const formOpacity = useRef(new Animated.Value(0)).current;
+  const subtitleOpacity = useRef(new Animated.Value(0)).current; // ✅ añadido
   const loadingOpacity = useRef(new Animated.Value(1)).current;
   const screenFadeOut = useRef(new Animated.Value(1)).current;
-  
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -38,6 +38,7 @@ export default function LoginScreen() {
     inputRange: [0, 1],
     outputRange: [colors.verdeOscuro, colors.white],
   });
+
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -82,14 +83,9 @@ export default function LoginScreen() {
 
   const handleLogin = () => {
     Keyboard.dismiss();
-    
-    // Validación de campos vacíos
+
     if (!username.trim() || !password.trim()) {
-      Alert.alert(
-        'Campos requeridos',
-        'Por favor ingresa tanto el usuario como la contraseña',
-        [{ text: 'OK', style: 'cancel' }]
-      );
+      Alert.alert('Campos requeridos', 'Por favor ingresa tanto el usuario como la contraseña');
       return;
     }
 
@@ -134,25 +130,18 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={{flex: 1}}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-      enabled={false}
-    >
-      <ScrollView 
-        contentContainerStyle={{flexGrow: 1}}
-        keyboardShouldPersistTaps="handled"
-      >
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
         <Animated.View style={[styles.container, { opacity: screenFadeOut }]}>
-          <Animated.View style={{
-            alignItems: 'center',
-            position: 'absolute',
-            top: height / 2 - 80,
-            transform: [{ translateY: titleAnimY }],
-            zIndex: 10,
-            elevation: 10
-          }}>
+          <Animated.View
+            style={{
+              alignItems: 'center',
+              position: 'absolute',
+              top: height / 2 - 80,
+              transform: [{ translateY: titleAnimY }],
+              zIndex: 10,
+              elevation: 10,
+            }}
+          >
             <Animated.Text style={[styles.title, { color: interpolatedColor }]}>
               GEVOPI
             </Animated.Text>
@@ -162,10 +151,10 @@ export default function LoginScreen() {
             </Animated.View>
           </Animated.View>
 
-          {/* Card Azul */}
+          {/* Fondo azul animado */}
           <Animated.View style={[styles.blueContainer, { transform: [{ translateY: blueAnim }] }]} />
 
-          {/* Subtitulo */}
+          {/* Subtítulo */}
           <Animated.Text style={[styles.subtitle, { opacity: subtitleOpacity }]}>
             Tu bienestar también importa
           </Animated.Text>
@@ -176,9 +165,9 @@ export default function LoginScreen() {
 
             <View style={styles.inputContainer}>
               <Ionicons name="person-outline" size={22} color={colors.verdeOscuro} style={styles.icon} />
-              <TextInput 
-                placeholder="Ingrese su usuario" 
-                style={styles.input} 
+              <TextInput
+                placeholder="Ingrese su usuario"
+                style={styles.input}
                 placeholderTextColor={colors.gray}
                 value={username}
                 onChangeText={setUsername}
@@ -187,22 +176,19 @@ export default function LoginScreen() {
 
             <View style={styles.inputContainer}>
               <Ionicons name="lock-closed-outline" size={22} color={colors.verdeOscuro} style={styles.icon} />
-              <TextInput 
-                placeholder="Ingrese su contraseña" 
+              <TextInput
+                placeholder="Ingrese su contraseña"
                 secureTextEntry={!showPassword}
-                style={[styles.input, {paddingRight: 40}]} 
+                style={[styles.input, { paddingRight: 40 }]}
                 placeholderTextColor={colors.gray}
                 value={password}
                 onChangeText={setPassword}
               />
-              <TouchableOpacity 
-                style={styles.eyeIcon} 
-                onPress={toggleShowPassword}
-              >
-                <Ionicons 
-                  name={showPassword ? "eye-off-outline" : "eye-outline"} 
-                  size={22} 
-                  color={colors.gray} 
+              <TouchableOpacity style={styles.eyeIcon} onPress={toggleShowPassword}>
+                <Ionicons
+                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={22}
+                  color={colors.gray}
                 />
               </TouchableOpacity>
             </View>
@@ -213,6 +199,5 @@ export default function LoginScreen() {
           </Animated.View>
         </Animated.View>
       </ScrollView>
-    </KeyboardAvoidingView>
   );
 }

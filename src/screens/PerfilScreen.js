@@ -26,8 +26,13 @@ import { getLoggedEmail } from '../services/authService';
 import { getVoluntarioByEmail } from '../services/voluntarioService';
 import { crearSolicitudAyuda } from '../services/mutationsNOSQL';
 
-const { height, width } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
+const incendios = [
+  { titulo: 'Incendio 1', fecha: '12/03/2025', lugar: 'Santa Cruz' },
+  { titulo: 'Incendio 2', fecha: '10/02/2025', lugar: 'Santa Cruz' },
+  { titulo: 'Incendio 3', fecha: '05/01/2025', lugar: 'Santa Cruz' },
+];
 
 const historialData = [
   {
@@ -74,7 +79,6 @@ export default function PerfilScreen() {
   const [historialIndex, setHistorialIndex] = useState(0);
   const [necesidadesIndex, setNecesidadesIndex] = useState(0);
   const [emergenciaVisible, setEmergenciaVisible] = useState(false);
-  const blueAnim = useRef(new Animated.Value(-height)).current;
 
   const navigation = useNavigation();
   const panelAnim = useRef(new Animated.Value(500)).current;
@@ -157,6 +161,7 @@ export default function PerfilScreen() {
     const fetchVoluntario = async () => {
       try {
         const email = getLoggedEmail();
+        console.log(email)
         const voluntarioData = await getVoluntarioByEmail(email);
 
         if (!voluntarioData) {
@@ -174,22 +179,6 @@ export default function PerfilScreen() {
     };
 
     fetchVoluntario();
-
-    Animated.sequence([
-      Animated.timing(blueAnim, {
-        toValue: 0,
-        duration: 800,
-        useNativeDriver: false,
-      }),
-      Animated.timing(blueAnim, {
-        toValue: 0,
-        duration: 900,
-        useNativeDriver: false,
-      }),
-    ]).start();
-
-
-
   }, []);
 
   const openInfo = () => {
@@ -241,17 +230,14 @@ export default function PerfilScreen() {
     );
   }
 
-
   return (
     <Animated.View style={[styles.container, { backgroundColor: colors.lighterCyan, opacity: fadeAnim }]}>
-      <Animated.View style={[styles.blueContainer, { transform: [{ translateY: blueAnim }] }]} />
-
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 20, paddingTop: 10 }}>
           <TouchableOpacity
             style={{
               position: 'absolute',
-              top: 40,
+              top: 40, // puedes ajustar según necesites
               right: 20,
               backgroundColor: 'red',
               padding: 10,
@@ -264,7 +250,6 @@ export default function PerfilScreen() {
             <FontAwesome5 name="bullhorn" size={20} color="white" />
           </TouchableOpacity>
         </View>
-
         {/* Perfil */}
         <View style={styles.perfilContainer}>
           <View style={styles.avatarWrapper}>
@@ -295,6 +280,17 @@ export default function PerfilScreen() {
           </View>
         </View>
 
+        {/* Incendios */}
+        <TouchableOpacity style={styles.sectionCard} activeOpacity={0.9} onPress={() => navigation.navigate('IncendiosMitigados')}>
+          <Text style={styles.sectionTitle}>Últimos Incendios</Text>
+          {incendios.map((inc, i) => (
+            <View key={i} style={styles.widgetCard}>
+              <Text style={styles.itemTitle}>{inc.titulo}</Text>
+              <Text style={styles.itemSubtitle}>Fecha: {inc.fecha}</Text>
+              <Text style={styles.itemSubtitle}>Lugar: {inc.lugar}</Text>
+            </View>
+          ))}
+        </TouchableOpacity>
 
         {/* Historial */}
         <TouchableOpacity style={styles.sectionCard} activeOpacity={0.9} onPress={() => navigation.navigate('Historial')}>
