@@ -1,11 +1,12 @@
 import { StyleSheet, Dimensions } from 'react-native';
 import colors from '../themes/colors';
+import { Colors } from 'react-native/Libraries/NewAppScreen';
 const { width, height } = Dimensions.get('window');
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.lighterCyan,
+    backgroundColor: colors.bordeSuave,
   },
   perfilContainer: {
     alignItems: 'center',
@@ -21,18 +22,30 @@ export default StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: colors.lightCyan,
+    backgroundColor: colors.verdeOscuro,
     borderWidth: 3,
-    borderColor: colors.blue,
+    borderColor: colors.verdeOscuro,
   },
   blueContainer: {
     position: 'absolute',
     top: 0,
-    width: width,
-    height: height * 0.6,
+    width: '100%',
+    height: height * 0.45,
+    backgroundColor: colors.verdePrincipal,
+    borderBottomLeftRadius: 50,
+    borderBottomRightRadius: 50,
+    zIndex: -1,
+  },
+
+  greenContainer: {
+    position: 'absolute',
+    top: 0,
+    width: '100%',
+    height: height * 0.4,
     backgroundColor: colors.verdeOscuro,
     borderBottomLeftRadius: 50,
     borderBottomRightRadius: 50,
+    zIndex: -1,
   },
   statusDot: {
     width: 20,
@@ -47,11 +60,11 @@ export default StyleSheet.create({
   name: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: colors.darkBlue,
+    color: colors.white,
     marginBottom: 5,
   },
   stressText: {
-    color: colors.darkBlue,
+    color: colors.verdeSuave,
     fontSize: 16,
     marginBottom: 5,
   },
@@ -74,7 +87,19 @@ export default StyleSheet.create({
     marginTop: 10,
   },
   circleButton: {
-    backgroundColor: colors.darkBlue,
+    backgroundColor: colors.fondo,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    color: colors.black,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 15,
+    elevation: 3,
+  },
+
+  emergenciaButton: {
+    backgroundColor: colors.red,
     width: 50,
     height: 50,
     borderRadius: 25,
@@ -84,7 +109,7 @@ export default StyleSheet.create({
     elevation: 3,
   },
   sectionCard: {
-    backgroundColor: 'white',
+    backgroundColor: colors.verdeSuave,
     margin: 16,
     padding: 16,
     borderRadius: 12,
@@ -97,21 +122,21 @@ export default StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.darkBlue,
+    color: colors.verdeOscuro,
     marginBottom: 15,
   },
   widgetCard: {
-    backgroundColor: colors.lighterCyan,
+    backgroundColor: colors.card,
     borderRadius: 10,
     padding: 15,
     marginBottom: 10,
     borderLeftWidth: 4,
-    borderLeftColor: colors.blue,
+    borderLeftColor: colors.verdeOscuro,
   },
   itemTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.darkBlue,
+    color: colors.verdeOscuro,
     marginBottom: 5,
   },
   itemSubtitle: {
@@ -125,11 +150,14 @@ export default StyleSheet.create({
     marginTop: 10,
   },
   dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     marginHorizontal: 4,
+    borderWidth: 1,
+    borderColor: colors.verdeOscuro,
   },
+
   modalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -139,7 +167,7 @@ export default StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'white',
+    backgroundColor: colors.fondo,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 25,
@@ -150,12 +178,13 @@ export default StyleSheet.create({
     top: 15,
     right: 20,
     zIndex: 1,
+    color: colors.verdeOscuro,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.darkBlue,
-    marginBottom: 20,
+    color: colors.verdeOscuro,
+    marginBottom: 30,
     textAlign: 'center',
   },
   infoRow: {
@@ -169,39 +198,144 @@ export default StyleSheet.create({
     fontSize: 16,
     color: '#333',
     marginLeft: 15,
+    color: colors.textoPrincipal,
+    fontWeight: 'bold',
   },
 
   carouselSectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.darkBlue,
+    color: colors.verdeOscuro,
     marginBottom: 10,
   },
   container: {
     flex: 1,
-    backgroundColor: colors.lighterCyan,
+    backgroundColor: colors.verdeOscuro,
   },
   avatarImage: {
     width: 120,
     height: 120,
     borderRadius: 60,
   },
-  
+
   avatarPlaceholder: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: colors.lightCyan,
+    backgroundColor: colors.fondo,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  
+
   avatarInitial: {
     fontSize: 48,
-    color: colors.darkBlue,
+    color: colors.verdeOscuro,
     fontWeight: 'bold',
   },
-  
-  
-  
+
+
+  modalSection: {
+    marginBottom: 18,
+  },
+  modalLabel: {
+    fontWeight: 'bold',
+    marginBottom: 6,
+    color: colors.verdeOscuro,
+    fontSize: 15,
+  },
+
+  descripcionInput: {
+    marginBottom: 6,
+    borderColor: colors.gray,
+    borderWidth: 1,
+    color: colors.verdeOscuro,
+    fontSize: 15,
+    backgroundColor:colors.white ,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+  },
+
+  enviarButton: {
+    backgroundColor: colors.verdeOscuro,
+    padding: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  enviarButtonText: {
+    color: colors.white,
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+
+
+
+
+  textArea: {
+    borderWidth: 1,
+    borderColor: colors.gray,
+    borderRadius: 10,
+    backgroundColor: colors.white,
+    padding: 12,
+    minHeight: 100,
+    textAlignVertical: 'top',
+    fontSize: 14,
+    color: colors.dark,
+    marginTop: 6,
+  },
+  dropdown: {
+    height: 50,
+    borderColor: colors.gray,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    backgroundColor: colors.white,
+    marginTop: 6,
+  },
+
+  placeholderStyle: {
+    fontSize: 14,
+    color: colors.gray,
+  },
+
+  selectedTextStyle: {
+    fontSize: 14,
+    color: colors.dark,
+  },
+
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+
+  loadingBox: {
+    backgroundColor: colors.fondo,
+    borderRadius: 16,
+    paddingVertical: 30,
+    paddingHorizontal: 40,
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+  },
+
+  loadingText: {
+    marginTop: 16,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.verdeOscuro,
+  },
+
+  loadingSubtext: {
+    fontSize: 14,
+    color: colors.verdeOscuro,
+    marginTop: 6,
+  },
+
+
+
 });

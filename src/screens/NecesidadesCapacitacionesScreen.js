@@ -108,8 +108,8 @@ const NecesidadesCapacitacionesScreen = () => {
       </View>
 
       <View style={styles.filtersRow}>
-        <TouchableOpacity onPress={abrirPanel} style={[styles.filtroButton, { backgroundColor: hayFiltrosActivos ? colors.darkBlue : colors.white }]}>
-          <FontAwesome5 name="filter" size={18} color={hayFiltrosActivos ? colors.white : colors.darkBlue} />
+        <TouchableOpacity onPress={abrirPanel} style={[styles.filtroButton, { backgroundColor: hayFiltrosActivos ? colors.verdeOscuro : colors.fondo }]}>
+          <FontAwesome5 name="filter" size={18} color={hayFiltrosActivos ? colors.white : colors.verdeOscuro} />
         </TouchableOpacity>
 
         <Animated.View style={{ flex: searchWidthAnim }}>

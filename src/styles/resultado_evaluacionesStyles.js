@@ -4,7 +4,7 @@ import colors from '../themes/colors';
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.lighterCyan,
+    backgroundColor: colors.fondo,
     padding: 20,
     paddingTop: 60,
   },
@@ -15,30 +15,46 @@ export default StyleSheet.create({
   },
   backArrow: {
     fontSize: 28,
-    color: colors.darkBlue,
+    color: colors.verdeOscuro,
+  },
+  detalleContainer: {
+    paddingBottom: 10,
+    borderRadius: 10,
+  },
+  detalleTitle: {
+    backgroundColor: colors.bordeSuave,
+    borderRadius: 10,
+    paddingStart: 10,
+
+  },
+  infoDetalle:{
+    marginTop: 10,
   },
   headerTitle: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: colors.darkBlue,
+    color: colors.verdeOscuro,
     marginLeft: 12,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.darkBlue,
+    color: colors.verdeOscuro,
     marginVertical: 20,
+
+
   },
   subSectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.blue,
+    color: colors.verdeCritico,
     marginBottom: 12,
     marginTop: 20,
   },
   detailRow: {
     flexDirection: 'row',
     marginBottom: 8,
+    paddingTop: 8,
   },
   detailLabel: {
     fontWeight: 'bold',
@@ -62,7 +78,7 @@ export default StyleSheet.create({
   },
   reportBullet: {
     marginRight: 8,
-    color: colors.darkBlue,
+    color: colors.verdeOscuro,
     fontWeight: 'bold',
   },
 });

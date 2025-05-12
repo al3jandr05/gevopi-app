@@ -13,12 +13,15 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native';
-import { FontAwesome5 } from '@expo/vector-icons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import styles from '../styles/perfilStyles';
 import colors from '../themes/colors';
 import { Picker } from '@react-native-picker/picker';
 import * as Location from 'expo-location';
+import { FontAwesome5 } from '@expo/vector-icons';
+
+import { Dropdown } from 'react-native-element-dropdown';
 
 import { getUsuarios } from '../services/usuarioService';
 import { getVoluntarioByUsuarioId } from '../services/voluntarioService';
@@ -27,17 +30,13 @@ import { getVoluntarioByEmail } from '../services/voluntarioService';
 import { crearSolicitudAyuda } from '../services/mutationsNOSQL';
 
 const { width } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
-const incendios = [
-  { titulo: 'Incendio 1', fecha: '12/03/2025', lugar: 'Santa Cruz' },
-  { titulo: 'Incendio 2', fecha: '10/02/2025', lugar: 'Santa Cruz' },
-  { titulo: 'Incendio 3', fecha: '05/01/2025', lugar: 'Santa Cruz' },
-];
 
 const historialData = [
   {
     titulo: 'Historial Clínico',
-    screen: 'HistorialScreen',
+    screen: 'Historial',
     items: [
       { titulo: 'Fractura de Brazo', descripcion: 'Lesión durante el fuego en Samaipata', fecha: '20/5/2025' },
       { titulo: 'Dolor en el Abdomen', descripcion: 'Síntoma después de estar 8 horas combatiendo el fuego', fecha: '19/5/2025' },
@@ -45,7 +44,7 @@ const historialData = [
   },
   {
     titulo: 'Historial Psicológico',
-    screen: 'HistorialScreen',
+    screen: 'Historial',
     items: [
       { titulo: 'Ansiedad', descripcion: 'Post incendio', fecha: '22/5/2025' },
       { titulo: 'Estrés agudo', descripcion: 'Durante rescate', fecha: '18/5/2025' },
@@ -56,7 +55,7 @@ const historialData = [
 const necesidadesData = [
   {
     titulo: 'Necesidades',
-    screen: 'NecesidadesCapacitacionesScreen',
+    screen: 'NecesidadesCapacitaciones',
     items: [
       { titulo: 'Primeros Auxilios', descripcion: 'Curso básico de RCP' },
       { titulo: 'Rescate en Incendios', descripcion: 'Técnicas de intervención' },
@@ -64,7 +63,7 @@ const necesidadesData = [
   },
   {
     titulo: 'Capacitaciones',
-    screen: 'NecesidadesCapacitacionesScreen',
+    screen: 'NecesidadesCapacitaciones',
     items: [
       { titulo: 'Atención de víctimas', descripcion: 'Capacitación psicológica' },
       { titulo: 'Técnicas de Evacuación', descripcion: 'Formación avanzada' },
@@ -79,12 +78,17 @@ export default function PerfilScreen() {
   const [historialIndex, setHistorialIndex] = useState(0);
   const [necesidadesIndex, setNecesidadesIndex] = useState(0);
   const [emergenciaVisible, setEmergenciaVisible] = useState(false);
+  const dotAnimsHistorial = useRef([]);
+  const dotAnimsNecesidades = useRef([]);
 
   const navigation = useNavigation();
   const panelAnim = useRef(new Animated.Value(500)).current;
   const scrollXHistorial = useRef(new Animated.Value(0)).current;
   const scrollXNecesidades = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const blueAnim = useRef(new Animated.Value(-height)).current;
+
+  const dotAnims = useRef([]).current;
 
   const [tipo, setTipo] = useState('');
   const [descripcion, setDescripcion] = useState('');
@@ -151,7 +155,6 @@ export default function PerfilScreen() {
       fadeAnim.setValue(0);
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 600,
         useNativeDriver: true,
       }).start();
     }, [])
@@ -161,7 +164,7 @@ export default function PerfilScreen() {
     const fetchVoluntario = async () => {
       try {
         const email = getLoggedEmail();
-        console.log(email)
+        console.log(email);
         const voluntarioData = await getVoluntarioByEmail(email);
 
         if (!voluntarioData) {
@@ -175,30 +178,97 @@ export default function PerfilScreen() {
         console.error('Error al cargar voluntario:', error);
       } finally {
         setLoadingVoluntario(false);
+
+        Animated.timing(blueAnim, {
+          toValue: 0,
+          duration: 800,
+          useNativeDriver: false,
+        }).start();
       }
     };
 
     fetchVoluntario();
+
+
   }, []);
+
+  useEffect(() => {
+    if (dotAnimsHistorial.current.length !== historialData.length) {
+      dotAnimsHistorial.current = historialData.map((_, i) => new Animated.Value(i === historialIndex ? 1 : 0));
+    }
+
+    dotAnimsHistorial.current.forEach((anim, i) => {
+      Animated.timing(anim, {
+        toValue: i === historialIndex ? 1 : 0,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+    });
+  }, [historialIndex]);
+
+  useEffect(() => {
+    if (dotAnimsNecesidades.current.length !== necesidadesData.length) {
+      dotAnimsNecesidades.current = necesidadesData.map((_, i) => new Animated.Value(i === necesidadesIndex ? 1 : 0));
+    }
+
+    dotAnimsNecesidades.current.forEach((anim, i) => {
+      Animated.timing(anim, {
+        toValue: i === necesidadesIndex ? 1 : 0,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+    });
+  }, [necesidadesIndex]);
+
+
+
+
+
 
   const openInfo = () => {
     setInfoVisible(true);
     Animated.timing(panelAnim, { toValue: 0, duration: 300, useNativeDriver: true }).start();
   };
 
-  const closeInfo = () => {
-    Animated.timing(panelAnim, { toValue: 500, duration: 300, useNativeDriver: true }).start(() =>
-      setInfoVisible(false)
+  const openEmergencia = () => {
+    setEmergenciaVisible(true);
+    Animated.timing(panelAnim, { toValue: 0, duration: 300, useNativeDriver: true }).start();
+  };
+
+  const closeEmergencia = () => {
+    Animated.timing(panelAnim, { toValue: 1000, duration: 300, useNativeDriver: true }).start(() =>
+      setEmergenciaVisible(false)
+
+
     );
   };
 
-  const renderDots = (count, activeIndex) => (
+
+  const closeInfo = () => {
+    Animated.timing(panelAnim, { toValue: 1000, duration: 300, useNativeDriver: true }).start(() =>
+      setInfoVisible(false),
+
+
+    );
+  };
+
+  const renderDots = (count, animsArray) => (
     <View style={styles.dotsContainer}>
-      {Array.from({ length: count }).map((_, i) => (
-        <View key={i} style={[styles.dot, { backgroundColor: i === activeIndex ? colors.darkBlue : colors.gray }]} />
-      ))}
+      {animsArray.slice(0, count).map((anim, i) => {
+        const backgroundColor = anim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [colors.white, colors.verdeOscuro],
+        });
+
+        return <Animated.View key={i} style={[styles.dot, { backgroundColor }]} />;
+      })}
     </View>
   );
+
+
+
+
+
 
   const renderCarouselItem = ({ item }) => (
     <View style={{ width: width - 64 }}>
@@ -215,12 +285,16 @@ export default function PerfilScreen() {
 
   if (loadingVoluntario) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.darkBlue} />
-        <Text style={styles.loadingText}>Cargando perfil...</Text>
+      <View style={[styles.loadingContainer, { backgroundColor: colors.fondo }]}>
+        <View style={styles.loadingBox}>
+          <ActivityIndicator size="large" color={colors.verdeOscuro} />
+          <Text style={styles.loadingText}>Cargando tu perfil...</Text>
+          <Text style={styles.loadingSubtext}>Por favor espera un momento</Text>
+        </View>
       </View>
     );
   }
+
 
   if (!voluntario) {
     return (
@@ -231,24 +305,12 @@ export default function PerfilScreen() {
   }
 
   return (
-    <Animated.View style={[styles.container, { backgroundColor: colors.lighterCyan, opacity: fadeAnim }]}>
+    <Animated.View style={[styles.container, { backgroundColor: colors.fondo, opacity: fadeAnim }]}>
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+        <Animated.View style={[styles.greenContainer, { transform: [{ translateY: blueAnim }] }]} />
+
         <View style={{ flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 20, paddingTop: 10 }}>
-          <TouchableOpacity
-            style={{
-              position: 'absolute',
-              top: 40, // puedes ajustar según necesites
-              right: 20,
-              backgroundColor: 'red',
-              padding: 10,
-              borderRadius: 25,
-              zIndex: 20,
-              elevation: 5,
-            }}
-            onPress={() => setEmergenciaVisible(true)}
-          >
-            <FontAwesome5 name="bullhorn" size={20} color="white" />
-          </TouchableOpacity>
+
         </View>
         {/* Perfil */}
         <View style={styles.perfilContainer}>
@@ -269,28 +331,25 @@ export default function PerfilScreen() {
 
           <View style={styles.buttonsRow}>
             <TouchableOpacity style={styles.circleButton} onPress={openInfo}>
-              <FontAwesome5 name="info" size={20} color="white" />
+              <Ionicons name="information-circle-outline" size={24} color={colors.verdeOscuro} />
             </TouchableOpacity>
+
             <TouchableOpacity style={styles.circleButton} onPress={() => navigation.navigate("Evaluaciones")}>
-              <FontAwesome5 name="clipboard-list" size={20} color="white" />
+              <Ionicons name="document-text-outline" size={24} color={colors.verdeOscuro} />
             </TouchableOpacity>
+
             <TouchableOpacity style={styles.circleButton} onPress={() => navigation.navigate("Solicitudes")}>
-              <FontAwesome5 name="list-alt" size={20} color="white" />
+              <Ionicons name="file-tray-full-outline" size={24} color={colors.verdeOscuro} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.emergenciaButton} onPress={openEmergencia}>
+              <Ionicons name="megaphone-outline" size={24} color="white" />
             </TouchableOpacity>
           </View>
+
         </View>
 
-        {/* Incendios */}
-        <TouchableOpacity style={styles.sectionCard} activeOpacity={0.9} onPress={() => navigation.navigate('IncendiosMitigados')}>
-          <Text style={styles.sectionTitle}>Últimos Incendios</Text>
-          {incendios.map((inc, i) => (
-            <View key={i} style={styles.widgetCard}>
-              <Text style={styles.itemTitle}>{inc.titulo}</Text>
-              <Text style={styles.itemSubtitle}>Fecha: {inc.fecha}</Text>
-              <Text style={styles.itemSubtitle}>Lugar: {inc.lugar}</Text>
-            </View>
-          ))}
-        </TouchableOpacity>
+
 
         {/* Historial */}
         <TouchableOpacity style={styles.sectionCard} activeOpacity={0.9} onPress={() => navigation.navigate('Historial')}>
@@ -299,6 +358,7 @@ export default function PerfilScreen() {
             renderItem={renderCarouselItem}
             keyExtractor={(item, index) => index.toString()}
             horizontal
+            pagingEnabled
             showsHorizontalScrollIndicator={false}
             onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollXHistorial } } }], { useNativeDriver: false })}
             onMomentumScrollEnd={(e) => {
@@ -307,7 +367,7 @@ export default function PerfilScreen() {
             }}
             scrollEventThrottle={16}
           />
-          {renderDots(historialData.length, historialIndex)}
+          {renderDots(historialData.length, dotAnimsHistorial.current)}
         </TouchableOpacity>
 
         {/* Necesidades y Capacitaciones */}
@@ -326,7 +386,7 @@ export default function PerfilScreen() {
             }}
             scrollEventThrottle={16}
           />
-          {renderDots(necesidadesData.length, necesidadesIndex)}
+          {renderDots(necesidadesData.length, dotAnimsNecesidades.current)}
         </TouchableOpacity>
       </ScrollView>
 
@@ -335,112 +395,106 @@ export default function PerfilScreen() {
         <Pressable style={styles.modalBackdrop} onPress={closeInfo} />
         <Animated.View style={[styles.modalContent, { transform: [{ translateY: panelAnim }] }]}>
           <TouchableOpacity style={styles.closeButton} onPress={closeInfo}>
-            <FontAwesome5 name="times" size={20} color={colors.darkBlue} />
+            <FontAwesome5 name="times" size={20} color={colors.verdeOscuro} />
           </TouchableOpacity>
           <Text style={styles.modalTitle}>Información del Voluntario</Text>
 
           <View style={styles.infoRow}>
-            <FontAwesome5 name="user" size={20} color={colors.darkBlue} />
+            <FontAwesome5 name="user" size={20} color={colors.verdeOscuro} />
             <Text style={styles.infoText}>{voluntario.nombre} {voluntario.apellido}</Text>
           </View>
           <View style={styles.infoRow}>
-            <FontAwesome5 name="id-card" size={20} color={colors.darkBlue} />
+            <FontAwesome5 name="id-card" size={20} color={colors.verdeOscuro} />
             <Text style={styles.infoText}>{voluntario.ci}</Text>
           </View>
           <View style={styles.infoRow}>
-            <FontAwesome5 name="phone" size={20} color={colors.darkBlue} />
+            <FontAwesome5 name="phone" size={20} color={colors.verdeOscuro} />
             <Text style={styles.infoText}>{voluntario.telefono}</Text>
           </View>
           <View style={styles.infoRow}>
-            <FontAwesome5 name="tint" size={20} color={colors.darkBlue} />
+            <FontAwesome5 name="tint" size={20} color={colors.verdeOscuro} />
             <Text style={styles.infoText}>{voluntario.tipo_sangre}</Text>
           </View>
         </Animated.View>
       </Modal>
 
       <Modal transparent visible={emergenciaVisible} animationType="fade">
-        <Pressable style={styles.modalBackdrop} onPress={() => setEmergenciaVisible(false)} />
-        <View style={[styles.modalContent]}>
-          <TouchableOpacity style={styles.closeButton} onPress={() => setEmergenciaVisible(false)}>
-            <FontAwesome5 name="times" size={20} color={colors.darkBlue} />
-          </TouchableOpacity>
-          <Text style={styles.modalTitle}>Reportar Emergencia</Text>
+        <Pressable style={styles.modalBackdrop} onPress={closeEmergencia} />
 
-          <View style={styles.infoRow}>
-            <Text>Tipo de emergencia:</Text>
-            <View
-              style={{
-                borderWidth: 1,
-                borderColor: colors.gray,
-                borderRadius: 8,
-                marginTop: 5,
-                width: '100%',
-                overflow: 'hidden',
-              }}
-            >
-              <Picker
-                selectedValue={tipo}
-                onValueChange={(itemValue) => setTipo(itemValue)}
-                style={{ width: '100%' }}
-              >
-                <Picker.Item label="Selecciona un tipo" value="" />
-                <Picker.Item label="Físico" value="Fisico" />
-                <Picker.Item label="Emocional" value="Emocional" />
-                <Picker.Item label="Recurso" value="Recurso" />
-              </Picker>
+        <Animated.View style={[styles.modalContent, { transform: [{ translateY: panelAnim }] }]}>
+          <ScrollView contentContainerStyle={{ paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
+            {/* Cerrar */}
+            <TouchableOpacity style={styles.closeButton} onPress={closeEmergencia}>
+              <Ionicons name="close" size={24} color={colors.verdeOscuro} />
+            </TouchableOpacity>
+
+            <Text style={styles.modalTitle}>Reportar Emergencia</Text>
+
+            {/* Tipo de emergencia */}
+            <View style={styles.modalSection}>
+              <Text style={styles.modalLabel}>Tipo de emergencia</Text>
+              <Dropdown
+                style={styles.dropdown}
+                placeholderStyle={styles.placeholderStyle}
+                selectedTextStyle={styles.selectedTextStyle}
+                data={[
+                  { label: 'Físico', value: 'Fisico' },
+                  { label: 'Emocional', value: 'Emocional' },
+                  { label: 'Recurso', value: 'Recurso' },
+                ]}
+                maxHeight={200}
+                labelField="label"
+                valueField="value"
+                placeholder="Selecciona un tipo"
+                value={tipo}
+                onChange={item => setTipo(item.value)}
+              />
             </View>
-          </View>
 
-          <View style={styles.infoRow}>
-            <Text>Descripción:</Text>
-            <TextInput
-              placeholder="Descripción breve"
-              style={styles.input}
-              value={descripcion}
-              onChangeText={setDescripcion}
-            />
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text>Nivel de emergencia:</Text>
-            <View
-              style={{
-                borderWidth: 1,
-                borderColor: colors.gray,
-                borderRadius: 8,
-                marginTop: 5,
-                width: '100%',
-                overflow: 'hidden',
-              }}
-            >
-              <Picker
-                selectedValue={nivel}
-                onValueChange={(itemValue) => setNivel(itemValue)}
-                style={{ width: '100%' }}
-              >
-                <Picker.Item label="Selecciona un nivel" value="" />
-                <Picker.Item label="Bajo" value="1" />
-                <Picker.Item label="Medio" value="3" />
-                <Picker.Item label="Alto" value="5" />
-              </Picker>
+            {/* Descripción */}
+            <View style={styles.modalSection}>
+              <Text style={styles.modalLabel}>Descripción</Text>
+              <TextInput
+                placeholder="Describe brevemente la emergencia..."
+                multiline
+                style={[styles.input, styles.descripcionInput]}
+                value={descripcion}
+                onChangeText={setDescripcion}
+              />
             </View>
-          </View>
 
-          {/* Botón ENVIAR */}
-          <TouchableOpacity
-            style={{
-              backgroundColor: colors.darkBlue,
-              padding: 12,
-              marginTop: 20,
-              borderRadius: 8,
-              alignItems: 'center',
-            }}
-            onPress={handleEnviarSolicitud}
-          >
-            <Text style={{ color: 'white', fontWeight: 'bold' }}>ENVIAR</Text>
-          </TouchableOpacity>
-        </View>
+            {/* Nivel de emergencia */}
+            <View style={styles.modalSection}>
+              <Text style={styles.modalLabel}>Nivel de emergencia</Text>
+              <Dropdown
+                style={styles.dropdown}
+                placeholderStyle={styles.placeholderStyle}
+                selectedTextStyle={styles.selectedTextStyle}
+                data={[
+                  { label: 'Bajo', value: '1' },
+                  { label: 'Medio', value: '3' },
+                  { label: 'Alto', value: '5' },
+                ]}
+                maxHeight={200}
+                labelField="label"
+                valueField="value"
+                placeholder="Selecciona un nivel"
+                value={nivel}
+                onChange={item => setNivel(item.value)}
+              />
+            </View>
+
+            {/* Botón */}
+            <TouchableOpacity style={styles.enviarButton} onPress={handleEnviarSolicitud}>
+              <Text style={styles.enviarButtonText}>ENVIAR</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </Animated.View>
       </Modal>
+
+
+
+
     </Animated.View>
   );
 }

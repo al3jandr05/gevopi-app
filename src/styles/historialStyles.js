@@ -4,7 +4,7 @@ import colors from '../themes/colors';
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.lighterCyan,
+    backgroundColor: colors.fondo,
     padding: 16,
     paddingTop: 60,
 
@@ -15,12 +15,12 @@ export default StyleSheet.create({
   },
   backArrow: {
     fontSize: 28,
-    color: colors.darkBlue,
+    color: colors.verdeOscuro,
   },
   headerTitle: {
     fontSize: 30,
     fontWeight: 'bold',
-    color: colors.darkBlue,
+    color: colors.verdeOscuro,
     marginLeft: 10,
   },
   filtersRow: {
@@ -33,7 +33,7 @@ export default StyleSheet.create({
     borderRadius: 12,
     marginRight: 12,
     borderWidth: 1,
-    borderColor: colors.darkBlue,
+    borderColor: colors.verdeOscuro,
   },
   input: {
     backgroundColor: colors.white,
@@ -41,7 +41,10 @@ export default StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 14,
     fontSize: 14,
-    color: colors.darkBlue,
+    color: colors.verdeOscuro,
+    height: 40,
+    borderWidth: 1,
+    borderColor: colors.verdeOscuro,
   },
   reiniciarButton: {
     backgroundColor: colors.red,
@@ -50,28 +53,31 @@ export default StyleSheet.create({
     marginLeft: 8,
   },
   card: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.verdeHoverCard,
     padding: 18,
     borderRadius: 16,
     marginBottom: 14,
     shadowColor: colors.black,
     shadowOpacity: 0.1,
+    borderLeftColor: colors.verdeOscuro,
+    borderLeftWidth: 4,
+
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 },
     elevation: 4,
   },
   cardTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
-    color: colors.darkBlue,
-    fontSize: 16,
-    marginBottom: 6,
+    color: colors.verdeOscuro,
+    marginBottom: 8,
   },
   cardSubtitle: {
-    color: colors.darkBlue,
-    fontSize: 13,
+    fontSize: 14,
+    color: colors.black,
   },
   cardFecha: {
-    color: colors.darkBlue,
+    color: colors.verdeOscuro,
     fontSize: 12,
     marginTop: 6,
   },
@@ -80,7 +86,7 @@ export default StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    color: colors.darkBlue,
+    color: colors.verdeOscuro,
     fontSize: 16,
     textAlign: 'center',
   },
@@ -99,7 +105,7 @@ export default StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.dark,
+    color: colors.verdeOscuro,
     marginBottom: 16,
   },
   filterLabel: {
@@ -115,12 +121,14 @@ export default StyleSheet.create({
   choiceChip: {
     paddingHorizontal: 12,
     paddingVertical: 8,
+    backgroundColor: colors.white,
     borderRadius: 20,
-    backgroundColor: colors.inputBackground,
     marginRight: 10,
+    borderWidth: 1,
+    borderColor: colors.verdeOscuro,
   },
   choiceChipSelected: {
-    backgroundColor: colors.darkBlue,
+    backgroundColor: colors.verdeOscuro,
   },
   datePicker: {
     padding: 14,
@@ -139,7 +147,7 @@ export default StyleSheet.create({
   },
 
   applyButton: {
-    backgroundColor: colors.darkBlue,
+    backgroundColor: colors.verdeOscuro,
     padding: 14,
     borderRadius: 12,
     marginTop: 20,

@@ -118,8 +118,8 @@ const EvaluacionesScreen = () => {
       </View>
 
       <View style={styles.filtersRow}>
-        <TouchableOpacity onPress={abrirPanel} style={[styles.filtroButton, { backgroundColor: hayFiltrosActivos ? colors.darkBlue : colors.white }]}>
-          <FontAwesome5 name="filter" size={18} color={hayFiltrosActivos ? colors.white : colors.darkBlue} />
+        <TouchableOpacity onPress={abrirPanel} style={[styles.filtroButton, { backgroundColor: hayFiltrosActivos ? colors.verdeOscuro : colors.white }]}>
+          <FontAwesome5 name="filter" size={18} color={hayFiltrosActivos ? colors.white : colors.verdeOscuro} />
         </TouchableOpacity>
 
         <Animated.View style={{ flex: searchWidthAnim }}>
@@ -158,7 +158,7 @@ const EvaluacionesScreen = () => {
         }}
         ListEmptyComponent={() => (
           <View style={{ padding: 30, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ color: colors.darkBlue, textAlign: 'center', fontSize: 16 }}>
+            <Text style={{ color: colors.verdeOscuro, textAlign: 'center', fontSize: 16 }}>
               No se encontraron resultados.
             </Text>
           </View>
@@ -180,7 +180,7 @@ const EvaluacionesScreen = () => {
                   style={[styles.choiceChip, filtrosTemp.estado === tipo && styles.choiceChipSelected]}
                   onPress={() => setFiltrosTemp(prev => ({ ...prev, estado: tipo }))}
                 >
-                  <Text style={{ color: filtrosTemp.estado === tipo ? colors.white : colors.dark }}>{tipo}</Text>
+                  <Text style={{ color: filtrosTemp.estado === tipo ? colors.white : colors.black }}>{tipo}</Text>
                 </Pressable>
               ))}
             </View>
@@ -188,8 +188,8 @@ const EvaluacionesScreen = () => {
             {filtrosTemp.estado && (
               <>
                 <TouchableOpacity onPress={() => setMostrarRangoFechas(!mostrarRangoFechas)} style={styles.rangoFechaToggle}>
-                  <Text style={{ color: colors.darkBlue, fontWeight: 'bold' }}>Rango de Fechas</Text>
-                  <Ionicons name={mostrarRangoFechas ? "chevron-up" : "chevron-down"} size={20} color={colors.darkBlue} />
+                  <Text style={{ color: colors.verdeOscuro, fontWeight: 'bold' }}>Rango de Fechas</Text>
+                  <Ionicons name={mostrarRangoFechas ? "chevron-up" : "chevron-down"} size={20} color={colors.verdeOscuro} />
                 </TouchableOpacity>
 
                 {mostrarRangoFechas && (
@@ -224,7 +224,7 @@ const EvaluacionesScreen = () => {
             mode="date"
             display={Platform.OS === 'ios' ? "inline" : "calendar"}
             onChange={onDateChange}
-            textColor={Platform.OS === 'ios' ? colors.darkBlue : undefined}
+            textColor={Platform.OS === 'ios' ? colors.verdeOscuro : undefined}
             themeVariant={Platform.OS === 'ios' ? "light" : undefined}
           />
         </View>

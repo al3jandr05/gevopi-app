@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import styles from '../styles/resultado_evaluacionesStyles';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import colors from '../themes/colors';
 
 const resultadosSimulados = {
   "Evaluación física post-incendio": {
@@ -75,51 +76,62 @@ const ResultadoEvaluacionesScreen = () => {
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-        <Text style={styles.sectionTitle}>Detalles de la Evaluación</Text>
+        <View style={styles.detalleContainer}>
+          <View style={styles.detalleTitle}>
+            <Text style={styles.sectionTitle}>Detalles de la Evaluación</Text>
 
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Título:</Text>
-          <Text style={styles.detailContent}>{evaluacion.titulo || "-"}</Text>
+          </View>
+          <View style={styles.infoDetalle}>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Título:</Text>
+              <Text style={styles.detailContent}>{evaluacion.titulo || "-"}</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Fecha realizada:</Text>
+              <Text style={styles.detailContent}>{evaluacion.fechaRealizada || "-"}</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Resultado entregado:</Text>
+              <Text style={styles.detailContent}>{evaluacion.fechaResultado || "-"}</Text>
+            </View>
+          </View>
+
         </View>
+        <View style={styles.detalleContainer}>
+          <View style={styles.detalleTitle}>
+            <Text style={styles.sectionTitle}>Informe Detallado</Text>
 
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Fecha realizada:</Text>
-          <Text style={styles.detailContent}>{evaluacion.fechaRealizada || "-"}</Text>
+          </View>
+
+          {resultado ? (
+            <>
+              <Text style={styles.subSectionTitle}>Resumen General</Text>
+              <Text style={styles.reportText}>{resultado.resumen}</Text>
+
+              <Text style={styles.subSectionTitle}>Observaciones</Text>
+              {resultado.observaciones.map((obs, i) => (
+                <View key={i} style={styles.reportRow}>
+                  <Text style={styles.reportBullet}>{i + 1}.</Text>
+                  <Text style={styles.reportText}>{obs}</Text>
+                </View>
+              ))}
+
+              <Text style={styles.subSectionTitle}>Recomendaciones</Text>
+              {resultado.recomendaciones.map((rec, i) => (
+                <View key={i} style={styles.reportRow}>
+                  <Text style={styles.reportBullet}>•</Text>
+                  <Text style={styles.reportText}>{rec}</Text>
+                </View>
+              ))}
+            </>
+          ) : (
+            <Text style={styles.reportText}>
+              No se encontró un resultado disponible para esta evaluación.
+            </Text>
+          )}
         </View>
-
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Resultado entregado:</Text>
-          <Text style={styles.detailContent}>{evaluacion.fechaResultado || "-"}</Text>
-        </View>
-
-        <Text style={styles.sectionTitle}>Informe Detallado</Text>
-
-        {resultado ? (
-          <>
-            <Text style={styles.subSectionTitle}>Resumen General</Text>
-            <Text style={styles.reportText}>{resultado.resumen}</Text>
-
-            <Text style={styles.subSectionTitle}>Observaciones</Text>
-            {resultado.observaciones.map((obs, i) => (
-              <View key={i} style={styles.reportRow}>
-                <Text style={styles.reportBullet}>{i + 1}.</Text>
-                <Text style={styles.reportText}>{obs}</Text>
-              </View>
-            ))}
-
-            <Text style={styles.subSectionTitle}>Recomendaciones</Text>
-            {resultado.recomendaciones.map((rec, i) => (
-              <View key={i} style={styles.reportRow}>
-                <Text style={styles.reportBullet}>•</Text>
-                <Text style={styles.reportText}>{rec}</Text>
-              </View>
-            ))}
-          </>
-        ) : (
-          <Text style={styles.reportText}>
-            No se encontró un resultado disponible para esta evaluación.
-          </Text>
-        )}
       </ScrollView>
     </View>
   );
