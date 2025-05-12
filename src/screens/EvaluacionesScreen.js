@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, Animated, Pressable, Modal, Platform } from 'react-native';
 import colors from '../themes/colors';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -6,10 +6,17 @@ import { useNavigation } from '@react-navigation/native';
 import styles from '../styles/evaluacionesStyles';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 
+import { useQuery } from '@apollo/client';
+import { getLoggedEmail } from '../services/authService';
+import { getVoluntarioByEmail } from '../services/voluntarioService';
+import { GET_EVALUACIONES } from '../services/queriesSQL';
+
 const EvaluacionesScreen = () => {
   const navigation = useNavigation();
 
   const [search, setSearch] = useState('');
+  const [voluntarioId, setVoluntarioId] = useState(null);
+  const [evaluaciones, setEvaluaciones] = useState([]);
 
   const [filtrosAplicados, setFiltrosAplicados] = useState({
     estado: null,
@@ -28,19 +35,45 @@ const EvaluacionesScreen = () => {
   const [pickerValue, setPickerValue] = useState(null);
   const [mostrarRangoFechas, setMostrarRangoFechas] = useState(false);
 
-
   const panelAnim = useRef(new Animated.Value(500)).current;
   const reiniciarOpacity = useRef(new Animated.Value(0)).current;
   const searchWidthAnim = useRef(new Animated.Value(1)).current;
 
-  const evaluaciones = [
-    { titulo: "Evaluación física post-incendio", fechaRealizada: "2025-03-10", fechaResultado: "2025-03-12" },
-    { titulo: "Evaluación psicológica inicial", fechaRealizada: "2025-03-05", fechaResultado: null },
-    { titulo: "Evaluación estrés crónico", fechaRealizada: "2025-02-15", fechaResultado: "2025-02-17" },
-    { titulo: "Revisión mensual", fechaRealizada: "2025-02-01", fechaResultado: null },
-  ];
-
   const hayFiltrosActivos = filtrosAplicados.estado !== null || filtrosAplicados.desde || filtrosAplicados.hasta;
+
+  useEffect(() => {
+    const fetchVoluntarioId = async () => {
+      try {
+        const email = await getLoggedEmail();
+        const voluntario = await getVoluntarioByEmail(email);
+        if (voluntario && voluntario.id) {
+          setVoluntarioId(parseInt(voluntario.id));
+        }
+      } catch (error) {
+        console.error('Error al obtener el ID del voluntario:', error);
+      }
+    };
+
+    fetchVoluntarioId();
+  }, []);
+
+  const { loading, error, data } = useQuery(GET_EVALUACIONES, {
+    variables: { historialId: voluntarioId },
+    skip: !voluntarioId,
+  });
+
+  useEffect(() => {
+    if (data && data.evaluacionesVoluntarios) {
+      const evaluaciones = data.evaluacionesVoluntarios.map((evaluacion) => ({
+        titulo: evaluacion.test.nombre,
+        fechaRealizada: new Date(evaluacion.fecha).toLocaleDateString(),
+        fechaResultado: evaluacion.respuestas.length > 0 ? new Date(evaluacion.fecha).toLocaleDateString() : null,
+        detalles: evaluacion,
+      }));
+      setEvaluaciones(evaluaciones);
+    }
+  }, [data]);
+  
 
   const abrirPanel = () => {
     setFiltrosTemp({ ...filtrosAplicados });
@@ -59,11 +92,7 @@ const EvaluacionesScreen = () => {
 
   const reiniciarFiltros = () => {
     setSearch('');
-    setFiltrosAplicados({
-      estado: null,
-      desde: null,
-      hasta: null,
-    });
+    setFiltrosAplicados({ estado: null, desde: null, hasta: null });
 
     Animated.parallel([
       Animated.timing(reiniciarOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
@@ -73,11 +102,11 @@ const EvaluacionesScreen = () => {
 
   const abrirPicker = (type) => {
     setPickerType(type);
-    setPickerValue(type === "Desde" ? filtrosTemp.desde : filtrosTemp.hasta);
+    setPickerValue(type === 'Desde' ? filtrosTemp.desde : filtrosTemp.hasta);
   };
 
   const onDateChange = (event, selectedDate) => {
-    if (pickerType === "Desde") setFiltrosTemp(prev => ({ ...prev, desde: selectedDate }));
+    if (pickerType === 'Desde') setFiltrosTemp(prev => ({ ...prev, desde: selectedDate }));
     else setFiltrosTemp(prev => ({ ...prev, hasta: selectedDate }));
     setPickerType(null);
   };
@@ -93,11 +122,10 @@ const EvaluacionesScreen = () => {
     const estado = filtrosAplicados.estado;
     const desde = filtrosAplicados.desde;
     const hasta = filtrosAplicados.hasta;
-
     const tieneResultado = !!e.fechaResultado;
 
-    if (estado === "Realizada" && tieneResultado) return false;
-    if (estado === "Entregada" && !tieneResultado) return false;
+    if (estado === 'Realizada' && tieneResultado) return false;
+    if (estado === 'Entregada' && !tieneResultado) return false;
 
     const fecha = new Date(e.fechaRealizada);
     if (desde && fecha < desde) return false;
@@ -118,8 +146,8 @@ const EvaluacionesScreen = () => {
       </View>
 
       <View style={styles.filtersRow}>
-        <TouchableOpacity onPress={abrirPanel} style={[styles.filtroButton, { backgroundColor: hayFiltrosActivos ? colors.verdeOscuro : colors.white }]}>
-          <FontAwesome5 name="filter" size={18} color={hayFiltrosActivos ? colors.white : colors.verdeOscuro} />
+      <TouchableOpacity onPress={abrirPanel} style={[styles.filtroButton, { backgroundColor: hayFiltrosActivos ? colors.verdeOscuro : colors.white }]}>
+      <FontAwesome5 name="filter" size={18} color={hayFiltrosActivos ? colors.white : colors.verdeOscuro} />
         </TouchableOpacity>
 
         <Animated.View style={{ flex: searchWidthAnim }}>
@@ -165,7 +193,6 @@ const EvaluacionesScreen = () => {
         )}
       />
 
-
       {showFilters && (
         <View style={styles.modalOverlay}>
           <Pressable style={{ flex: 1 }} onPress={cerrarPanel} />
@@ -174,7 +201,7 @@ const EvaluacionesScreen = () => {
 
             <Text style={styles.filterLabel}>Estado de Evaluación</Text>
             <View style={styles.chipsRow}>
-              {["Realizada", "Entregada"].map(tipo => (
+              {['Realizada', 'Entregada'].map(tipo => (
                 <Pressable
                   key={tipo}
                   style={[styles.choiceChip, filtrosTemp.estado === tipo && styles.choiceChipSelected]}
@@ -189,18 +216,18 @@ const EvaluacionesScreen = () => {
               <>
                 <TouchableOpacity onPress={() => setMostrarRangoFechas(!mostrarRangoFechas)} style={styles.rangoFechaToggle}>
                   <Text style={{ color: colors.verdeOscuro, fontWeight: 'bold' }}>Rango de Fechas</Text>
-                  <Ionicons name={mostrarRangoFechas ? "chevron-up" : "chevron-down"} size={20} color={colors.verdeOscuro} />
+                  <Ionicons name={mostrarRangoFechas ? 'chevron-up' : 'chevron-down'} size={20} color={colors.verdeOscuro} />
                 </TouchableOpacity>
 
                 {mostrarRangoFechas && (
                   <>
-                    <TouchableOpacity onPress={() => abrirPicker("Desde")} style={styles.datePicker}>
-                      <Text>Desde: {filtrosTemp.desde ? filtrosTemp.desde.toLocaleDateString() : "----"}</Text>
+                    <TouchableOpacity onPress={() => abrirPicker('Desde')} style={styles.datePicker}>
+                      <Text>Desde: {filtrosTemp.desde ? filtrosTemp.desde.toLocaleDateString() : '----'}</Text>
                     </TouchableOpacity>
 
-                    {filtrosTemp.estado === "Entregada" && (
-                      <TouchableOpacity onPress={() => abrirPicker("Hasta")} style={styles.datePicker}>
-                        <Text>Hasta: {filtrosTemp.hasta ? filtrosTemp.hasta.toLocaleDateString() : "----"}</Text>
+                    {filtrosTemp.estado === 'Entregada' && (
+                      <TouchableOpacity onPress={() => abrirPicker('Hasta')} style={styles.datePicker}>
+                        <Text>Hasta: {filtrosTemp.hasta ? filtrosTemp.hasta.toLocaleDateString() : '----'}</Text>
                       </TouchableOpacity>
                     )}
                   </>
@@ -215,24 +242,19 @@ const EvaluacionesScreen = () => {
         </View>
       )}
 
-      {/* DateTimePicker bien hecho */}
       <Modal visible={pickerType !== null} transparent animationType="fade">
         <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }} onPress={() => setPickerType(null)} />
         <View style={{ backgroundColor: colors.white, padding: 16, borderRadius: 12, margin: 20 }}>
           <DateTimePicker
             value={pickerValue || new Date()}
             mode="date"
-            display={Platform.OS === 'ios' ? "inline" : "calendar"}
+            display={Platform.OS === 'ios' ? 'inline' : 'calendar'}
             onChange={onDateChange}
             textColor={Platform.OS === 'ios' ? colors.verdeOscuro : undefined}
-            themeVariant={Platform.OS === 'ios' ? "light" : undefined}
+            themeVariant={Platform.OS === 'ios' ? 'light' : undefined}
           />
         </View>
       </Modal>
-
-
-
-
     </View>
   );
 };

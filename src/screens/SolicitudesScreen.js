@@ -36,10 +36,108 @@ export default function SolicitudesScreen() {
   const [showFilters, setShowFilters] = useState(false);
   const [pickerVisible, setPickerVisible] = useState(false);
 
+  const [modalCIVisible, setModalCIVisible] = useState(false);
+  const [ciList, setCIList] = useState(['']);
+  const [ciErrors, setCIErrors] = useState([]);
+
+
   const reiniciarOpacity = useRef(new Animated.Value(0)).current;
   const searchWidthAnim = useRef(new Animated.Value(1)).current;
 
   const hayFiltros = Object.values(filtros).some(v => v);
+
+  const agregarCampoCI = () => {
+    if (ciList.length < 5) {
+      setCIList([...ciList, '']);
+      setCIErrors([...ciErrors, false]);
+    }
+  };
+ 
+  
+  const actualizarCI = (index, value) => {
+    const nuevos = [...ciList];
+    nuevos[index] = value;
+    setCIList(nuevos);
+  
+    const nuevosErrores = [...ciErrors];
+    nuevosErrores[index] = false;
+    setCIErrors(nuevosErrores);
+  };
+  
+  const validarYConfirmar = async () => {
+    const errores = [];
+    let hayError = false;
+  
+    for (let i = 0; i < ciList.length; i++) {
+      const ci = ciList[i];
+      if (!ci || isNaN(ci)) {
+        errores[i] = true;
+        hayError = true;
+      } else {
+        errores[i] = false;
+      }
+    }
+  
+    setCIErrors(errores);
+  
+    if (hayError) {
+      alert('Uno o más CIs son inválidos (deben ser numéricos)');
+      return;
+    }
+  
+    try {
+      await actualizarSolicitudEnProgreso(selectedSolicitud.id, ciList.map(ci => parseInt(ci)));
+      alert('Solicitud marcada como "En progreso"');
+      await cargarSolicitudes();
+      setSelectedSolicitud(null);
+      setModalCIVisible(false);
+      setCIList(['']);
+      setCIErrors([]);
+    } catch (err) {
+      console.error('Error al actualizar solicitud:', err);
+      alert('Error al marcar como en progreso');
+    }
+  };
+
+  const calcularDistancia = (lat1, lon1, lat2, lon2) => {
+    const R = 6371000;
+    const rad = (x) => (x * Math.PI) / 180;
+    const dLat = rad(lat2 - lat1);
+    const dLon = rad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(dLon / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+  
+  const manejarLlegadaUbicacion = async (solicitud) => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Permiso de ubicación denegado');
+        return;
+      }
+      const ubicacion = await Location.getCurrentPositionAsync({});
+      const distancia = calcularDistancia(
+        ubicacion.coords.latitude,
+        ubicacion.coords.longitude,
+        parseFloat(solicitud.latitud),
+        parseFloat(solicitud.longitud)
+      );
+      if (distancia <= 100) {
+        await marcarSolicitudRespondida(solicitud.id);
+        alert('Solicitud marcada como respondida');
+        await cargarSolicitudes();
+        setSelectedSolicitud(null);
+      } else {
+        alert(`Estás a ${Math.round(distancia)} metros. Acércate más.`);
+      }
+    } catch (err) {
+      console.error('Error al verificar ubicación:', err);
+      alert('Error verificando ubicación');
+    }
+  };  
 
   const cargarSolicitudes = async () => {
     try {
@@ -127,7 +225,7 @@ export default function SolicitudesScreen() {
   }
   const getColorPorEstado = (estado) => {
     switch (estado?.toLowerCase()) {
-      case 'Sin respuesta':
+      case 'Sin responder':
         return '#999';
       case 'en progreso':
         return '#FFA500';
@@ -329,10 +427,65 @@ export default function SolicitudesScreen() {
             <FontAwesome5 name="check-circle" size={20} color={colors.verdeOscuro} />
             <Text style={styles.infoText}>Estado: {solicitudDetalle?.estado}</Text>
           </View>
+            {solicitudDetalle?.estado === 'Sin responder' && ( 
+              <TouchableOpacity
+                style={styles.accionButton}
+                onPress={() => setModalCIVisible(true)}
+              >
+                <Text style={styles.accionButtonText}>Acudir al llamado</Text>
+              </TouchableOpacity>
+            )}
+
+            {solicitudDetalle?.estado === 'En Progreso' && (
+              <TouchableOpacity
+                style={styles.accionButton}
+                onPress={() => manejarLlegadaUbicacion(solicitudDetalle)}
+              >
+                <Text style={styles.accionButtonText}>Ya en ubicación</Text>
+              </TouchableOpacity>
+            )}
         </Animated.View>
       </Modal>
 
+      <Modal
+        visible={modalCIVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setModalCIVisible(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>CIs que acudirán (máx 5)</Text>
 
+            {ciList.map((ci, index) => (
+              <TextInput
+                key={index}
+                value={ci}
+                onChangeText={(text) => actualizarCI(index, text)}
+                placeholder="Ingrese CI"
+                keyboardType="numeric"
+                style={[
+                  styles.modalInput,
+                  ciErrors[index] ? { borderColor: 'red' } : {},
+                ]}
+              />
+            ))}
+
+            {ciList.length < 5 && (
+              <TouchableOpacity onPress={agregarCampoCI}>
+                <Text style={{ color: colors.darkBlue, marginBottom: 10 }}>+ Agregar otro</Text>
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity style={styles.overlayButton} onPress={validarYConfirmar}>
+              <Text style={styles.overlayButtonText}>Confirmar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
+  
 }
+
+

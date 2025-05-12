@@ -12,6 +12,7 @@ export const crearSolicitudAyuda = async ({
     const query = `
     mutation {
       crearSolicitudAyuda(
+        ciVoluntariosAcudir: 0
         descripcion: "${descripcion}"
         fecha: "${fecha}"
         nivelEmergencia: ${nivelEmergencia}
@@ -77,4 +78,51 @@ export const actualizarSolicitudEnProgreso = async (id, ciArray) => {
       throw new Error(response.data.errors[0].message);
     }
     return response.data.data.marcarSolicitudRespondida;
+  };
+
+  export const crearHistorialUbicacion = async (lat, lon, voluntarioId) => {
+    const query = `
+      mutation(
+        $voluntarioId: ID!
+        $lat: Float!
+        $lon: Float!
+      ) {
+        crearHistorialUbicacion(
+          voluntarioId: $voluntarioId
+          lat: $lat
+          lon: $lon
+        ) {
+          id
+          lat
+          lon
+          fecha
+          voluntarioId
+        }
+      }
+    `;
+  
+    const variables = {
+      voluntarioId: voluntarioId.toString(),
+      lat: parseFloat(lat),
+      lon: parseFloat(lon),
+    };
+  
+    try {
+      const response = await graphqlApi.post('', { query, variables });
+      
+      // Verificar si hay errores en la respuesta GraphQL
+      if (response.data.errors) {
+        throw new Error(response.data.errors[0].message);
+      }
+      
+      // Si no hay errores, devolver los datos
+      return response.data.data.crearHistorialUbicacion;
+    } catch (err) {
+      console.error('Error en crearHistorialUbicacion:', {
+        error: err.message,
+        variables,
+        stack: err.stack,
+      });
+      throw err;
+    }
   };

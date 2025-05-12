@@ -1,28 +1,31 @@
-import axios from 'axios';
+import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const graphqlApi = axios.create({
-    baseURL: 'http://192.168.0.8:8080',  headers: {
-    'Content-Type': 'application/json',
+const httpLink = createHttpLink({
+  uri: 'http://34.9.138.238:8080/graphql',
+});
+
+const authLink = setContext(async (_, { headers }) => {
+  const token = await AsyncStorage.getItem('token');
+  const bearer = await AsyncStorage.getItem('bearer');
+
+  return {
+    headers: {
+      ...headers,
+      authorization: bearer && token ? `${bearer} ${token}` : '',
+    },
+  };
+});
+
+const client = new ApolloClient({
+  link: authLink.concat(httpLink),
+  cache: new InMemoryCache(),
+  defaultOptions: {
+    watchQuery: {
+      fetchPolicy: 'cache-and-network',
+    },
   },
 });
 
-export const getHistorialClinicoPorVoluntario = async (voluntarioId) => {
-  const query = `
-    query {
-      historialPorVoluntario(voluntarioId: ${voluntarioId}) {
-        id
-        diagnostico
-        fecha
-        // agrega aquí los campos reales del modelo HistorialClinico
-      }
-    }
-  `;
-
-  const response = await graphqlApi.post('', { query });
-
-  if (response.data.errors) {
-    throw new Error(response.data.errors[0].message);
-  }
-
-  return response.data.data.historialPorVoluntario;
-};
+export default client;

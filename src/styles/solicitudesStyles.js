@@ -236,6 +236,54 @@ export default StyleSheet.create({
         right: 16,
         zIndex: 2,
     },
-
-
+    modalBackdrop: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+      },
+      modalCard: {
+        backgroundColor: 'white',
+        padding: 20,
+        borderRadius: 10,
+        width: '80%',
+      },
+      modalTitle: {
+        fontSize: 16,
+        marginBottom: 10,
+        fontWeight: 'bold',
+        color: colors.darkBlue,
+      },
+      modalInput: {
+        borderWidth: 1,
+        borderColor: colors.gray,
+        borderRadius: 8,
+        padding: 10,
+        marginBottom: 10,
+      },
+      overlayButton: {
+        marginTop: 12,
+        backgroundColor: colors.darkBlue,
+        paddingVertical: 10,
+        borderRadius: 6,
+        alignItems: 'center',
+      },
+      overlayButtonText: {
+        color: 'white',
+        fontWeight: 'bold',
+      },
+      accionButton: {
+        marginTop: 16,
+        backgroundColor: colors.verdeOscuro,
+        paddingVertical: 12,
+        borderRadius: 10,
+        alignItems: 'center',
+      },
+      
+      accionButtonText: {
+        color: colors.white,
+        fontSize: 16,
+        fontWeight: 'bold',
+      },
+      
 });

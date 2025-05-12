@@ -1,15 +1,19 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, Animated, Pressable, Modal, Platform } from 'react-native';
 import colors from '../themes/colors';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
 import styles from '../styles/historialStyles';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
+import { getLoggedEmail } from '../services/authService';
+import { getVoluntarioByEmail } from '../services/voluntarioService';
+import { obtenerReportePorVoluntarioId } from '../services/queriesSQL';
 
 const HistorialScreen = () => {
   const navigation = useNavigation();
 
   const [search, setSearch] = useState('');
+  const [historial, setHistorial] = useState([]);
   const [filtrosAplicados, setFiltrosAplicados] = useState({
     tipo: null,
     desde: null,
@@ -29,13 +33,6 @@ const HistorialScreen = () => {
   const panelAnim = useRef(new Animated.Value(500)).current;
   const reiniciarOpacity = useRef(new Animated.Value(0)).current;
   const searchWidthAnim = useRef(new Animated.Value(1)).current;
-
-  const historial = [
-    { tipo: "clinico", titulo: "Fractura de Brazo", descripcion: "Lesión durante el fuego en Samaipata", fecha: "2025-05-20" },
-    { tipo: "psicologico", titulo: "Migraña leve", descripcion: "Síntoma después de combate prolongado", fecha: "2025-03-18" },
-    { tipo: "psicologico", titulo: "Estrés Agudo", descripcion: "Detectado después de un evento traumático", fecha: "2025-03-15" },
-    { tipo: "psicologico", titulo: "Ansiedad Leve", descripcion: "Revisión por exposición prolongada", fecha: "2024-11-02" },
-  ];
 
   const hayFiltrosActivos = filtrosAplicados.tipo !== null || filtrosAplicados.desde || filtrosAplicados.hasta;
 
@@ -74,6 +71,47 @@ const HistorialScreen = () => {
     else setFiltrosTemp(prev => ({ ...prev, hasta: selectedDate }));
     setPickerType(null);
   };
+
+  useEffect(() => {
+    const fetchHistorial = async () => {
+      try {
+        const email = await getLoggedEmail();
+        const voluntario = await getVoluntarioByEmail(email);
+        if (!voluntario || !voluntario.id) return;
+  
+        const reportes = await obtenerReportePorVoluntarioId(voluntario.id.toString());
+        if (reportes?.length > 0) {
+          const masReciente = [...reportes].sort((a, b) => new Date(b.fechaGenerado) - new Date(a.fechaGenerado))[0];
+  
+          const items = [];
+  
+          if (masReciente.resumenFisico) {
+            items.push({
+              tipo: "clinico",
+              titulo: "Resumen Clínico",
+              descripcion: masReciente.resumenFisico,
+              fecha: masReciente.fechaGenerado,
+            });
+          }
+  
+          if (masReciente.resumenEmocional) {
+            items.push({
+              tipo: "psicologico",
+              titulo: "Resumen Psicológico",
+              descripcion: masReciente.resumenEmocional,
+              fecha: masReciente.fechaGenerado,
+            });
+          }
+  
+          setHistorial(items);
+        }
+      } catch (err) {
+        console.error("Error cargando historial:", err);
+      }
+    };
+  
+    fetchHistorial();
+  }, []);
 
   if (hayFiltrosActivos) {
     Animated.parallel([

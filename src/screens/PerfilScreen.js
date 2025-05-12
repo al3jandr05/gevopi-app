@@ -17,7 +17,6 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import styles from '../styles/perfilStyles';
 import colors from '../themes/colors';
-import { Picker } from '@react-native-picker/picker';
 import * as Location from 'expo-location';
 import { FontAwesome5 } from '@expo/vector-icons';
 
@@ -27,49 +26,11 @@ import { getUsuarios } from '../services/usuarioService';
 import { getVoluntarioByUsuarioId } from '../services/voluntarioService';
 import { getLoggedEmail } from '../services/authService';
 import { getVoluntarioByEmail } from '../services/voluntarioService';
-import { crearSolicitudAyuda } from '../services/mutationsNOSQL';
+import { crearSolicitudAyuda, crearHistorialUbicacion } from '../services/mutationsNOSQL';
+import { obtenerReportePorVoluntarioId } from '../services/queriesSQL';
 
 const { width } = Dimensions.get('window');
 const { height } = Dimensions.get('window');
-
-
-const historialData = [
-  {
-    titulo: 'Historial Clínico',
-    screen: 'Historial',
-    items: [
-      { titulo: 'Fractura de Brazo', descripcion: 'Lesión durante el fuego en Samaipata', fecha: '20/5/2025' },
-      { titulo: 'Dolor en el Abdomen', descripcion: 'Síntoma después de estar 8 horas combatiendo el fuego', fecha: '19/5/2025' },
-    ],
-  },
-  {
-    titulo: 'Historial Psicológico',
-    screen: 'Historial',
-    items: [
-      { titulo: 'Ansiedad', descripcion: 'Post incendio', fecha: '22/5/2025' },
-      { titulo: 'Estrés agudo', descripcion: 'Durante rescate', fecha: '18/5/2025' },
-    ],
-  },
-];
-
-const necesidadesData = [
-  {
-    titulo: 'Necesidades',
-    screen: 'NecesidadesCapacitaciones',
-    items: [
-      { titulo: 'Primeros Auxilios', descripcion: 'Curso básico de RCP' },
-      { titulo: 'Rescate en Incendios', descripcion: 'Técnicas de intervención' },
-    ],
-  },
-  {
-    titulo: 'Capacitaciones',
-    screen: 'NecesidadesCapacitaciones',
-    items: [
-      { titulo: 'Atención de víctimas', descripcion: 'Capacitación psicológica' },
-      { titulo: 'Técnicas de Evacuación', descripcion: 'Formación avanzada' },
-    ],
-  },
-];
 
 export default function PerfilScreen() {
   const [infoVisible, setInfoVisible] = useState(false);
@@ -78,6 +39,45 @@ export default function PerfilScreen() {
   const [historialIndex, setHistorialIndex] = useState(0);
   const [necesidadesIndex, setNecesidadesIndex] = useState(0);
   const [emergenciaVisible, setEmergenciaVisible] = useState(false);
+  const [reporte, setReporte] = useState(null);
+
+
+  const historialData = [
+    {
+      titulo: 'Historial Clínico',
+      screen: 'Historial',
+      items: reporte
+        ? [{ titulo: 'Resumen Físico', descripcion: reporte.resumenFisico, fecha: new Date(reporte.fechaGenerado).toLocaleDateString() }]
+        : [],
+    },
+    {
+      titulo: 'Historial Psicológico',
+      screen: 'Historial',
+      items: reporte
+        ? [{ titulo: 'Resumen Emocional', descripcion: reporte.resumenEmocional, fecha: new Date(reporte.fechaGenerado).toLocaleDateString() }]
+        : [],
+    },
+  ];
+  
+  const necesidadesData = [
+    {
+      titulo: 'Necesidades',
+      screen: 'NecesidadesCapacitaciones',
+      items: reporte?.necesidades?.map((n) => ({
+        titulo: n.tipo,
+        descripcion: n.descripcion,
+      })) || [],
+    },
+    {
+      titulo: 'Capacitaciones',
+      screen: 'NecesidadesCapacitaciones',
+      items: reporte?.capacitaciones?.map((c) => ({
+        titulo: c.nombre,
+        descripcion: c.descripcion,
+      })) || [],
+    },
+  ];
+
   const dotAnimsHistorial = useRef([]);
   const dotAnimsNecesidades = useRef([]);
 
@@ -174,6 +174,12 @@ export default function PerfilScreen() {
         }
 
         setVoluntario(voluntarioData);
+        const reportes = await obtenerReportePorVoluntarioId(voluntarioData.id.toString());
+
+        if (reportes && reportes.length > 0) {
+          const masReciente = [...reportes].sort((a, b) => new Date(b.fechaGenerado) - new Date(a.fechaGenerado))[0];
+          setReporte(masReciente);
+        }
       } catch (error) {
         console.error('Error al cargar voluntario:', error);
       } finally {
@@ -189,8 +195,37 @@ export default function PerfilScreen() {
 
     fetchVoluntario();
 
-
   }, []);
+
+  useEffect(() => {
+    let intervalId;
+  
+    const iniciarSeguimiento = async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') return;
+  
+      const email = getLoggedEmail();
+      const voluntario = await getVoluntarioByEmail(email);
+      if (!voluntario) return;
+  
+      intervalId = setInterval(async () => {
+        try {
+          const location = await Location.getCurrentPositionAsync({});
+          await crearHistorialUbicacion(
+            location.coords.latitude,
+            location.coords.longitude,
+            voluntario.id.toString()
+          );
+        } catch (err) {
+          console.error('Error guardando ubicación:', err.message);
+        }
+      }, 3600000); //3600000
+    };
+  
+    iniciarSeguimiento();
+    return () => clearInterval(intervalId);
+  }, [voluntario?.id]);
+
 
   useEffect(() => {
     if (dotAnimsHistorial.current.length !== historialData.length) {
@@ -491,10 +526,6 @@ export default function PerfilScreen() {
           </ScrollView>
         </Animated.View>
       </Modal>
-
-
-
-
     </Animated.View>
   );
 }

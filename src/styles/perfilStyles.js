@@ -335,7 +335,4 @@ export default StyleSheet.create({
     color: colors.verdeOscuro,
     marginTop: 6,
   },
-
-
-
 });

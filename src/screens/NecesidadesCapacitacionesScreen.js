@@ -1,10 +1,13 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, Animated, Pressable, Modal, Platform } from 'react-native';
 import colors from '../themes/colors';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
 import styles from '../styles/necesidades_capacitacionesStyles';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
+import { getLoggedEmail } from '../services/authService';
+import { getVoluntarioByEmail } from '../services/voluntarioService';
+import { obtenerReportePorVoluntarioId } from '../services/queriesSQL';
 
 const NecesidadesCapacitacionesScreen = () => {
   const navigation = useNavigation();
@@ -30,12 +33,48 @@ const NecesidadesCapacitacionesScreen = () => {
   const reiniciarOpacity = useRef(new Animated.Value(0)).current;
   const searchWidthAnim = useRef(new Animated.Value(1)).current;
 
-  const historial = [
-    { tipo: "capacitacion", titulo: "Primeros Auxilios", descripcion: "Curso básico de RCP", fecha: "2025-6-20" },
-    { tipo: "necesidad", titulo: "Botiquín Personal", descripcion: "Necesita reabastecimiento", fecha: "2025-03-18" },
-    { tipo: "capacitacion", titulo: "Rescate en incendios", descripcion: "Técnicas de intervención", fecha: "2025-03-15" },
-    { tipo: "necesidad", titulo: "Mascarilla de seguridad", descripcion: "Sustitución por desgaste", fecha: "2024-11-02" },
-  ];
+  const [items, setItems] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const email = await getLoggedEmail(); 
+        const voluntario = await getVoluntarioByEmail(email);
+
+        console.log("Usuario matcheado:", voluntario);
+
+        if (!voluntario || !voluntario.id) return;
+  
+        const reportes = await obtenerReportePorVoluntarioId(voluntario.id.toString());
+  
+        if (reportes?.length > 0) {
+          const masReciente = [...reportes].sort(
+            (a, b) => new Date(b.fechaGenerado) - new Date(a.fechaGenerado)
+          )[0];
+        
+          const necesidades = masReciente.necesidades?.map((n) => ({
+            tipo: "necesidad",
+            titulo: n.tipo,
+            descripcion: n.descripcion,
+            fecha: masReciente.fechaGenerado,
+          })) || [];
+        
+          const capacitaciones = masReciente.capacitaciones?.map((c) => ({
+            tipo: "capacitacion",
+            titulo: c.nombre,
+            descripcion: c.descripcion,
+            fecha: masReciente.fechaGenerado,
+          })) || [];
+        
+          setItems([...necesidades, ...capacitaciones]);
+        }
+      } catch (error) {
+        console.error("Error cargando necesidades/capacitaciones:", error);
+      }
+    };
+  
+    fetchData();
+  }, []);
 
   const hayFiltrosActivos = filtrosAplicados.tipo !== null || filtrosAplicados.desde || filtrosAplicados.hasta;
 
@@ -82,7 +121,7 @@ const NecesidadesCapacitacionesScreen = () => {
     ]).start();
   }
 
-  const filtrados = historial.filter(e => {
+  const filtrados = items.filter(e => {
     const tipo = filtrosAplicados.tipo;
     const desde = filtrosAplicados.desde;
     const hasta = filtrosAplicados.hasta;
