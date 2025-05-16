@@ -86,6 +86,14 @@ export default function SolicitudesScreen() {
     }
   
     try {
+
+      if (!selectedSolicitud || !selectedSolicitud.id) {
+        alert('Solicitud no seleccionada o inválida');
+        return;
+      }
+    
+      const idsNumericos = ciList.map(ci => parseInt(ci));
+
       await actualizarSolicitudEnProgreso(selectedSolicitud.id, ciList.map(ci => parseInt(ci)));
       alert('Solicitud marcada como "En progreso"');
       await cargarSolicitudes();
