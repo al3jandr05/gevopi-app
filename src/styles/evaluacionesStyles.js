@@ -135,7 +135,6 @@ export default StyleSheet.create({
   },
   datePicker: {
     padding: 14,
-    backgroundColor: colors.inputBackground,
     borderRadius: 1,
     marginBottom: 10,
 

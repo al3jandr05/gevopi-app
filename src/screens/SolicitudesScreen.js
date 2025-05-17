@@ -1,160 +1,46 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, FlatList,
   Animated, Pressable, Modal, Platform
 } from 'react-native';
+import { Dropdown } from 'react-native-element-dropdown';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import MapView, { Marker } from 'react-native-maps';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import styles from '../styles/solicitudesStyles';
 import colors from '../themes/colors';
-import MapView, { Marker } from 'react-native-maps';
-import { FontAwesome5, Ionicons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import * as Location from 'expo-location';
 import { useNavigation } from '@react-navigation/native';
-import { obtenerTodasSolicitudes } from '../services/queriesNOSQL';
-import { actualizarSolicitudEnProgreso, marcarSolicitudRespondida } from '../services/mutationsNOSQL';
-import { getVoluntarioByEmail, getVoluntarioById } from '../services/voluntarioService';
-import { getLoggedEmail } from '../services/authService';
 
-const prioridad = { ALTO: 3, MEDIO: 2, BAJO: 1 };
+import { getLoggedEmail } from '../services/authService';
+import { getVoluntarioByEmail } from '../services/voluntarioService';
+import { obtenerTodasSolicitudes } from '../services/queriesNOSQL';
 
 export default function SolicitudesScreen() {
   const navigation = useNavigation();
+  const panelAnim = useRef(new Animated.Value(500)).current;
+  const searchWidthAnim = useRef(new Animated.Value(1)).current;
+  const reiniciarOpacity = useRef(new Animated.Value(0)).current;
+
   const [solicitudes, setSolicitudes] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
-  const [selectedSolicitud, setSelectedSolicitud] = useState(null);
-  const [voluntarioNombre, setVoluntarioNombre] = useState('');
-  const [infoVisible, setInfoVisible] = useState(false);
-  const [panelAnim] = useState(new Animated.Value(500));
-  const [solicitudDetalle, setSolicitudDetalle] = useState(null);
+  const [pickerVisible, setPickerVisible] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [pickerDate, setPickerDate] = useState(null);
 
-
-  // Filtros
   const [filtros, setFiltros] = useState({ tipo: null, nivel: null, estado: null, fecha: null });
   const [tempFiltros, setTempFiltros] = useState({ tipo: null, nivel: null, estado: null, fecha: null });
-  const [showFilters, setShowFilters] = useState(false);
-  const [pickerVisible, setPickerVisible] = useState(false);
-
-  const [modalCIVisible, setModalCIVisible] = useState(false);
-  const [ciList, setCIList] = useState(['']);
-  const [ciErrors, setCIErrors] = useState([]);
-
-
-  const reiniciarOpacity = useRef(new Animated.Value(0)).current;
-  const searchWidthAnim = useRef(new Animated.Value(1)).current;
 
   const hayFiltros = Object.values(filtros).some(v => v);
-
-  const agregarCampoCI = () => {
-    if (ciList.length < 5) {
-      setCIList([...ciList, '']);
-      setCIErrors([...ciErrors, false]);
-    }
-  };
- 
-  
-  const actualizarCI = (index, value) => {
-    const nuevos = [...ciList];
-    nuevos[index] = value;
-    setCIList(nuevos);
-  
-    const nuevosErrores = [...ciErrors];
-    nuevosErrores[index] = false;
-    setCIErrors(nuevosErrores);
-  };
-  
-  const validarYConfirmar = async () => {
-    const errores = [];
-    let hayError = false;
-  
-    for (let i = 0; i < ciList.length; i++) {
-      const ci = ciList[i];
-      if (!ci || isNaN(ci)) {
-        errores[i] = true;
-        hayError = true;
-      } else {
-        errores[i] = false;
-      }
-    }
-  
-    setCIErrors(errores);
-  
-    if (hayError) {
-      alert('Uno o más CIs son inválidos (deben ser numéricos)');
-      return;
-    }
-  
-    try {
-
-      if (!selectedSolicitud || !selectedSolicitud.id) {
-        alert('Solicitud no seleccionada o inválida');
-        return;
-      }
-    
-      const idsNumericos = ciList.map(ci => parseInt(ci));
-
-      await actualizarSolicitudEnProgreso(selectedSolicitud.id, ciList.map(ci => parseInt(ci)));
-      alert('Solicitud marcada como "En progreso"');
-      await cargarSolicitudes();
-      setSelectedSolicitud(null);
-      setModalCIVisible(false);
-      setCIList(['']);
-      setCIErrors([]);
-    } catch (err) {
-      console.error('Error al actualizar solicitud:', err);
-      alert('Error al marcar como en progreso');
-    }
-  };
-
-  const calcularDistancia = (lat1, lon1, lat2, lon2) => {
-    const R = 6371000;
-    const rad = (x) => (x * Math.PI) / 180;
-    const dLat = rad(lat2 - lat1);
-    const dLon = rad(lon2 - lon1);
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(dLon / 2) ** 2;
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  };
-  
-  const manejarLlegadaUbicacion = async (solicitud) => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        alert('Permiso de ubicación denegado');
-        return;
-      }
-      const ubicacion = await Location.getCurrentPositionAsync({});
-      const distancia = calcularDistancia(
-        ubicacion.coords.latitude,
-        ubicacion.coords.longitude,
-        parseFloat(solicitud.latitud),
-        parseFloat(solicitud.longitud)
-      );
-      if (distancia <= 100) {
-        await marcarSolicitudRespondida(solicitud.id);
-        alert('Solicitud marcada como respondida');
-        await cargarSolicitudes();
-        setSelectedSolicitud(null);
-      } else {
-        alert(`Estás a ${Math.round(distancia)} metros. Acércate más.`);
-      }
-    } catch (err) {
-      console.error('Error al verificar ubicación:', err);
-      alert('Error verificando ubicación');
-    }
-  };  
 
   const cargarSolicitudes = async () => {
     try {
       const email = getLoggedEmail();
-      const voluntarioActual = await getVoluntarioByEmail(email);
+      const voluntario = await getVoluntarioByEmail(email);
       const todas = await obtenerTodasSolicitudes();
-      const propias = todas.filter(s => s.voluntarioId !== voluntarioActual.id.toString());
-      const ordenadas = propias.sort((a, b) => prioridad[b.nivelEmergencia] - prioridad[a.nivelEmergencia]);
-      setSolicitudes(ordenadas);
+      const propias = todas.filter(s => s.voluntarioId !== voluntario.id.toString());
+      setSolicitudes(propias);
     } catch (err) {
       console.error(err);
     } finally {
@@ -166,18 +52,16 @@ export default function SolicitudesScreen() {
     cargarSolicitudes();
   }, []);
 
-
   useEffect(() => {
-    const resultados = solicitudes.filter(s => {
-      const coincideTipo = !filtros.tipo || s.tipo.toLowerCase() === filtros.tipo.toLowerCase();
+    const filtrados = solicitudes.filter(s => {
+      const coincideTipo = !filtros.tipo || s.tipo === filtros.tipo;
       const coincideNivel = !filtros.nivel || s.nivelEmergencia === filtros.nivel;
-      const coincideEstado = !filtros.estado || s.estado?.toLowerCase() === filtros.estado.toLowerCase();
-      const coincideFecha = !filtros.fecha || new Date(s.fecha).toDateString() === filtros.fecha.toDateString();
+      const coincideEstado = !filtros.estado || s.estado === filtros.estado;
+      const coincideFecha = !filtros.fecha || new Date(s.fecha).toDateString() === new Date(filtros.fecha).toDateString();
       const coincideBusqueda = s.descripcion.toLowerCase().includes(search.toLowerCase());
-
       return coincideTipo && coincideNivel && coincideEstado && coincideFecha && coincideBusqueda;
     });
-    setFiltered(resultados);
+    setFiltered(filtrados);
   }, [filtros, search, solicitudes]);
 
   const abrirPanel = () => {
@@ -188,27 +72,6 @@ export default function SolicitudesScreen() {
 
   const cerrarPanel = () => {
     Animated.timing(panelAnim, { toValue: 500, duration: 300, useNativeDriver: true }).start(() => setShowFilters(false));
-  };
-
-  const openDetalle = (item) => {
-    setSolicitudDetalle(item);
-    setInfoVisible(true);
-    Animated.timing(panelAnim, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const closeDetalle = () => {
-    Animated.timing(panelAnim, {
-      toValue: 500,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      setInfoVisible(false);
-      setSolicitudDetalle(null);
-    });
   };
 
   const aplicarFiltros = () => {
@@ -231,76 +94,58 @@ export default function SolicitudesScreen() {
       Animated.timing(searchWidthAnim, { toValue: 0.75, duration: 300, useNativeDriver: false }),
     ]).start();
   }
-  const getColorPorEstado = (estado) => {
-    switch (estado?.toLowerCase()) {
-      case 'Sin responder':
-        return '#999';
-      case 'en progreso':
-        return '#FFA500';
-      case 'respondido':
-        return '#388E3C';
-      default:
-        return '#666';
-    }
-  };
 
-  const getColorPorNivel = (nivel) => {
+  const getNivelColor = (nivel) => {
     switch (nivel?.toUpperCase()) {
-      case 'ALTO':
-        return '#D32F2F'; // rojo fuerte
-      case 'MEDIO':
-        return '#FBC02D'; // amarillo
-      case 'BAJO':
-        return '#388E3C'; // verde
-      default:
-        return '#9E9E9E'; // gris neutro
+      case 'ALTO': return '#D32F2F';   // Rojo
+      case 'MEDIO': return '#FBC02D';  // Amarillo
+      case 'BAJO': return '#388E3C';   // Verde
+      default: return '#9E9E9E';       // Gris por defecto
     }
   };
-
-
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => openDetalle(item)}>
-      <View style={[styles.card, { borderLeftColor: getColorPorNivel(item.nivelEmergencia), borderLeftWidth: 6 }]}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTipo}>{item.tipo?.toUpperCase()}</Text>
-          <Text style={[styles.cardNivel, { backgroundColor: getColorPorNivel(item.nivelEmergencia) }]}>
+    <TouchableOpacity onPress={() => navigation.navigate('DetalleSolicitud', { solicitud: item })}>
+      <View style={styles.card}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+          <Text style={styles.cardTitle}>{item.tipo}</Text>
+          <Text style={{
+            backgroundColor: getNivelColor(item.nivelEmergencia),
+            color: 'white',
+            paddingHorizontal: 10,
+            paddingVertical: 4,
+            borderRadius: 10,
+            fontSize: 12,
+            fontWeight: 'bold',
+            overflow: 'hidden',
+          }}>
             {item.nivelEmergencia}
           </Text>
         </View>
 
-        <Text style={styles.cardDescripcion}>{item.descripcion}</Text>
+        <Text style={styles.cardSubtitle}>{item.descripcion}</Text>
+        <Text style={styles.cardFecha}>📅 {new Date(item.fecha).toLocaleDateString()}</Text>
 
-        <Text style={styles.cardFecha}>
-          📅 {new Date(item.fecha).toLocaleString()}
-        </Text>
-
-        <View style={styles.cardMapaContainer}>
+        <View style={{ height: 150, marginVertical: 10, borderRadius: 10, overflow: 'hidden' }}>
           <MapView
-            style={styles.cardMapa}
+            style={{ flex: 1 }}
             initialRegion={{
               latitude: parseFloat(item.latitud),
               longitude: parseFloat(item.longitud),
               latitudeDelta: 0.01,
               longitudeDelta: 0.01,
             }}
+            scrollEnabled={false}
+            zoomEnabled={false}
           >
-            <Marker
-              coordinate={{
-                latitude: parseFloat(item.latitud),
-                longitude: parseFloat(item.longitud),
-              }}
-            />
+            <Marker coordinate={{ latitude: parseFloat(item.latitud), longitude: parseFloat(item.longitud) }} />
           </MapView>
         </View>
 
-        <Text style={[styles.cardEstado, { color: getColorPorEstado(item.estado) }]}>
-          Estado: {item.estado}
-        </Text>
+        <Text style={styles.cardState}>Estado: {item.estado}</Text>
       </View>
     </TouchableOpacity>
   );
-
 
   return (
     <View style={styles.container}>
@@ -312,14 +157,14 @@ export default function SolicitudesScreen() {
       </View>
 
       <View style={styles.filtersRow}>
-        <TouchableOpacity onPress={abrirPanel} style={[styles.filtroButton, { backgroundColor: hayFiltros ? colors.verdeOscuro : colors.fondo }]}>
-          <FontAwesome5 name="filter" size={18} color={hayFiltros ? colors.white : colors.verdeOscuro} />
+        <TouchableOpacity onPress={abrirPanel} style={[styles.filtroButton]}>
+          <FontAwesome5 name="filter" size={18} color={colors.verdeOscuro} />
         </TouchableOpacity>
 
         <Animated.View style={{ flex: searchWidthAnim }}>
           <TextInput
             placeholder="Buscar por descripción..."
-            style={styles.input}
+            style={styles.search}
             value={search}
             onChangeText={setSearch}
           />
@@ -334,51 +179,55 @@ export default function SolicitudesScreen() {
 
       <FlatList
         data={filtered}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item, index) => index.toString()}
         renderItem={renderItem}
-        ListEmptyComponent={() => (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No se encontraron solicitudes.</Text>
-          </View>
-        )}
+        ListEmptyComponent={<Text style={styles.emptyText}>No hay resultados.</Text>}
       />
 
+      {/* Filtros Modal */}
       {showFilters && (
         <View style={styles.modalOverlay}>
           <Pressable style={{ flex: 1 }} onPress={cerrarPanel} />
           <Animated.View style={[styles.modalContent, { transform: [{ translateY: panelAnim }] }]}>
             <Text style={styles.modalTitle}>Filtros</Text>
 
-            {["tipo", "nivel", "estado"].map((key) => {
-              const opciones = key === "tipo"
-                ? ["Fisica", "Psicologica"]
-                : key === "nivel"
-                  ? ["BAJO", "MEDIO", "ALTO"]
-                  : ["Sin Responder", "En Progreso", "Respondido"];
+            <Text style={styles.filterLabel}>Tipo</Text>
+            <Dropdown
+              style={styles.input}
+              data={[{ label: 'Fisica', value: 'Fisica' }, { label: 'Psicologica', value: 'Psicologica' }]}
+              labelField="label"
+              valueField="value"
+              value={tempFiltros.tipo}
+              placeholder="Selecciona tipo"
+              onChange={item => setTempFiltros(prev => ({ ...prev, tipo: item.value }))}
+            />
 
-              return (
-                <View key={key}>
-                  <Text style={styles.filterLabel}>{key.charAt(0).toUpperCase() + key.slice(1)}</Text>
-                  <View style={styles.chipsRow}>
-                    {opciones.map(op => (
-                      <Pressable
-                        key={op}
-                        style={[styles.choiceChip, tempFiltros[key] === op && styles.choiceChipSelected]}
-                        onPress={() => setTempFiltros(prev => ({ ...prev, [key]: op }))}
-                      >
-                        <Text style={{ color: tempFiltros[key] === op ? colors.white : colors.dark }}>{op}</Text>
-                      </Pressable>
-                    ))}
-                  </View>
-                </View>
-              );
-            })}
+            <Text style={styles.filterLabel}>Nivel</Text>
+            <Dropdown
+              style={styles.input}
+              data={[{ label: 'BAJO', value: 'BAJO' }, { label: 'MEDIO', value: 'MEDIO' }, { label: 'ALTO', value: 'ALTO' }]}
+              labelField="label"
+              valueField="value"
+              value={tempFiltros.nivel}
+              placeholder="Selecciona nivel"
+              onChange={item => setTempFiltros(prev => ({ ...prev, nivel: item.value }))}
+            />
+
+            <Text style={styles.filterLabel}>Estado</Text>
+            <Dropdown
+              style={styles.input}
+              data={[{ label: 'Sin responder', value: 'Sin responder' }, { label: 'En progreso', value: 'En progreso' }, { label: 'Respondido', value: 'Respondido' }]}
+              labelField="label"
+              valueField="value"
+              value={tempFiltros.estado}
+              placeholder="Selecciona estado"
+              onChange={item => setTempFiltros(prev => ({ ...prev, estado: item.value }))}
+            />
 
             <Text style={styles.filterLabel}>Fecha</Text>
             <TouchableOpacity onPress={() => setPickerVisible(true)} style={styles.datePicker}>
-              <Text>Fecha: {tempFiltros.fecha ? tempFiltros.fecha.toLocaleDateString() : '----'}</Text>
+              <Text>{tempFiltros.fecha ? tempFiltros.fecha.toLocaleDateString() : 'Seleccionar fecha'}</Text>
             </TouchableOpacity>
-
 
             <TouchableOpacity onPress={aplicarFiltros} style={styles.applyButton}>
               <Text style={styles.applyButtonText}>Aplicar Filtros</Text>
@@ -400,100 +249,11 @@ export default function SolicitudesScreen() {
               }
               setPickerVisible(false);
             }}
-            textColor={Platform.OS === 'ios' ? colors.darkBlue : undefined}
+            textColor={Platform.OS === 'ios' ? colors.verdeOscuro : undefined}
             themeVariant={Platform.OS === 'ios' ? "light" : undefined}
           />
         </View>
       </Modal>
-
-      <Modal transparent visible={infoVisible} animationType="fade">
-        <Pressable style={styles.modalBackdrop} onPress={closeDetalle} />
-        <Animated.View style={[styles.modalContent, { transform: [{ translateY: panelAnim }] }]}>
-          <TouchableOpacity style={styles.closeButton} onPress={closeDetalle}>
-            <FontAwesome5 name="times" size={20} color={colors.verdeOscuro} />
-          </TouchableOpacity>
-
-          <Text style={styles.modalTitle}>Detalles de la Solicitud</Text>
-
-          <View style={styles.infoRow}>
-            <FontAwesome5 name="file-alt" size={20} color={colors.verdeOscuro} />
-            <Text style={styles.infoText}>{solicitudDetalle?.descripcion}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <FontAwesome5 name="calendar" size={20} color={colors.verdeOscuro} />
-            <Text style={styles.infoText}>{new Date(solicitudDetalle?.fecha).toLocaleString()}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <FontAwesome5 name="heartbeat" size={20} color={colors.verdeOscuro} />
-            <Text style={styles.infoText}>Tipo: {solicitudDetalle?.tipo}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <FontAwesome5 name="exclamation-triangle" size={20} color={colors.verdeOscuro} />
-            <Text style={styles.infoText}>Nivel: {solicitudDetalle?.nivelEmergencia}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <FontAwesome5 name="check-circle" size={20} color={colors.verdeOscuro} />
-            <Text style={styles.infoText}>Estado: {solicitudDetalle?.estado}</Text>
-          </View>
-            {solicitudDetalle?.estado === 'Sin responder' && ( 
-              <TouchableOpacity
-                style={styles.accionButton}
-                onPress={() => setModalCIVisible(true)}
-              >
-                <Text style={styles.accionButtonText}>Acudir al llamado</Text>
-              </TouchableOpacity>
-            )}
-
-            {solicitudDetalle?.estado === 'En Progreso' && (
-              <TouchableOpacity
-                style={styles.accionButton}
-                onPress={() => manejarLlegadaUbicacion(solicitudDetalle)}
-              >
-                <Text style={styles.accionButtonText}>Ya en ubicación</Text>
-              </TouchableOpacity>
-            )}
-        </Animated.View>
-      </Modal>
-
-      <Modal
-        visible={modalCIVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setModalCIVisible(false)}
-      >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>CIs que acudirán (máx 5)</Text>
-
-            {ciList.map((ci, index) => (
-              <TextInput
-                key={index}
-                value={ci}
-                onChangeText={(text) => actualizarCI(index, text)}
-                placeholder="Ingrese CI"
-                keyboardType="numeric"
-                style={[
-                  styles.modalInput,
-                  ciErrors[index] ? { borderColor: 'red' } : {},
-                ]}
-              />
-            ))}
-
-            {ciList.length < 5 && (
-              <TouchableOpacity onPress={agregarCampoCI}>
-                <Text style={{ color: colors.darkBlue, marginBottom: 10 }}>+ Agregar otro</Text>
-              </TouchableOpacity>
-            )}
-
-            <TouchableOpacity style={styles.overlayButton} onPress={validarYConfirmar}>
-              <Text style={styles.overlayButtonText}>Confirmar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
-  
 }
-
-

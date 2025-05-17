@@ -12,6 +12,7 @@ import {
   Pressable,
   Image,
   ActivityIndicator,
+  KeyboardAvoidingView, Platform
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -58,7 +59,7 @@ export default function PerfilScreen() {
         : [],
     },
   ];
-  
+
   const necesidadesData = [
     {
       titulo: 'Necesidades',
@@ -199,15 +200,15 @@ export default function PerfilScreen() {
 
   useEffect(() => {
     let intervalId;
-  
+
     const iniciarSeguimiento = async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') return;
-  
+
       const email = getLoggedEmail();
       const voluntario = await getVoluntarioByEmail(email);
       if (!voluntario) return;
-  
+
       intervalId = setInterval(async () => {
         try {
           const location = await Location.getCurrentPositionAsync({});
@@ -221,7 +222,7 @@ export default function PerfilScreen() {
         }
       }, 3600000); //3600000
     };
-  
+
     iniciarSeguimiento();
     return () => clearInterval(intervalId);
   }, [voluntario?.id]);
@@ -429,9 +430,6 @@ export default function PerfilScreen() {
       <Modal transparent visible={infoVisible} animationType="fade">
         <Pressable style={styles.modalBackdrop} onPress={closeInfo} />
         <Animated.View style={[styles.modalContent, { transform: [{ translateY: panelAnim }] }]}>
-          <TouchableOpacity style={styles.closeButton} onPress={closeInfo}>
-            <FontAwesome5 name="times" size={20} color={colors.verdeOscuro} />
-          </TouchableOpacity>
           <Text style={styles.modalTitle}>Información del Voluntario</Text>
 
           <View style={styles.infoRow}>
@@ -453,79 +451,82 @@ export default function PerfilScreen() {
         </Animated.View>
       </Modal>
 
-      <Modal transparent visible={emergenciaVisible} animationType="fade">
-        <Pressable style={styles.modalBackdrop} onPress={closeEmergencia} />
+      <KeyboardAvoidingView style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : ''}
+        keyboardVerticalOffset={Platform.select({
+          ios: 40,
+          android: 0
+        })}>
+        <Modal transparent visible={emergenciaVisible} animationType="fade">
+          <Pressable style={styles.modalBackdrop} onPress={closeEmergencia} />
 
-        <Animated.View style={[styles.modalContent, { transform: [{ translateY: panelAnim }] }]}>
-          <ScrollView contentContainerStyle={{ paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
-            {/* Cerrar */}
-            <TouchableOpacity style={styles.closeButton} onPress={closeEmergencia}>
-              <Ionicons name="close" size={24} color={colors.verdeOscuro} />
-            </TouchableOpacity>
+          <Animated.View style={[styles.modalContent, { transform: [{ translateY: panelAnim }] }]}>
+            <ScrollView contentContainerStyle={{ paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
+            
 
-            <Text style={styles.modalTitle}>Reportar Emergencia</Text>
+              <Text style={styles.modalTitle}>Reportar Emergencia</Text>
 
-            {/* Tipo de emergencia */}
-            <View style={styles.modalSection}>
-              <Text style={styles.modalLabel}>Tipo de emergencia</Text>
-              <Dropdown
-                style={styles.dropdown}
-                placeholderStyle={styles.placeholderStyle}
-                selectedTextStyle={styles.selectedTextStyle}
-                data={[
-                  { label: 'Físico', value: 'Fisico' },
-                  { label: 'Emocional', value: 'Emocional' },
-                  { label: 'Recurso', value: 'Recurso' },
-                ]}
-                maxHeight={200}
-                labelField="label"
-                valueField="value"
-                placeholder="Selecciona un tipo"
-                value={tipo}
-                onChange={item => setTipo(item.value)}
-              />
-            </View>
+              {/* Tipo de emergencia */}
+              <View style={styles.modalSection}>
+                <Text style={styles.modalLabel}>Tipo de emergencia</Text>
+                <Dropdown
+                  style={styles.dropdown}
+                  placeholderStyle={styles.placeholderStyle}
+                  selectedTextStyle={styles.selectedTextStyle}
+                  data={[
+                    { label: 'Físico', value: 'Fisico' },
+                    { label: 'Emocional', value: 'Emocional' },
+                    { label: 'Recurso', value: 'Recurso' },
+                  ]}
+                  maxHeight={200}
+                  labelField="label"
+                  valueField="value"
+                  placeholder="Selecciona un tipo"
+                  value={tipo}
+                  onChange={item => setTipo(item.value)}
+                />
+              </View>
 
-            {/* Descripción */}
-            <View style={styles.modalSection}>
-              <Text style={styles.modalLabel}>Descripción</Text>
-              <TextInput
-                placeholder="Describe brevemente la emergencia..."
-                multiline
-                style={[styles.input, styles.descripcionInput]}
-                value={descripcion}
-                onChangeText={setDescripcion}
-              />
-            </View>
+              {/* Nivel de emergencia */}
+              <View style={styles.modalSection}>
+                <Text style={styles.modalLabel}>Nivel de emergencia</Text>
+                <Dropdown
+                  style={styles.dropdown}
+                  placeholderStyle={styles.placeholderStyle}
+                  selectedTextStyle={styles.selectedTextStyle}
+                  data={[
+                    { label: 'Bajo', value: '1' },
+                    { label: 'Medio', value: '3' },
+                    { label: 'Alto', value: '5' },
+                  ]}
+                  maxHeight={200}
+                  labelField="label"
+                  valueField="value"
+                  placeholder="Selecciona un nivel"
+                  value={nivel}
+                  onChange={item => setNivel(item.value)}
+                />
+              </View>
 
-            {/* Nivel de emergencia */}
-            <View style={styles.modalSection}>
-              <Text style={styles.modalLabel}>Nivel de emergencia</Text>
-              <Dropdown
-                style={styles.dropdown}
-                placeholderStyle={styles.placeholderStyle}
-                selectedTextStyle={styles.selectedTextStyle}
-                data={[
-                  { label: 'Bajo', value: '1' },
-                  { label: 'Medio', value: '3' },
-                  { label: 'Alto', value: '5' },
-                ]}
-                maxHeight={200}
-                labelField="label"
-                valueField="value"
-                placeholder="Selecciona un nivel"
-                value={nivel}
-                onChange={item => setNivel(item.value)}
-              />
-            </View>
-
-            {/* Botón */}
-            <TouchableOpacity style={styles.enviarButton} onPress={handleEnviarSolicitud}>
-              <Text style={styles.enviarButtonText}>ENVIAR</Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </Animated.View>
-      </Modal>
+              {/* Descripción */}
+              <View style={styles.modalSection}>
+                <Text style={styles.modalLabel}>Descripción</Text>
+                <TextInput
+                  placeholder="Describe brevemente la emergencia..."
+                  multiline
+                  style={[styles.input, styles.descripcionInput]}
+                  value={descripcion}
+                  onChangeText={setDescripcion}
+                />
+              </View>
+              {/* Botón */}
+              <TouchableOpacity style={styles.enviarButton} onPress={handleEnviarSolicitud}>
+                <Text style={styles.enviarButtonText}>ENVIAR</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </Animated.View>
+        </Modal>
+      </KeyboardAvoidingView>
     </Animated.View>
   );
 }

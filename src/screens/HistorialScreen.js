@@ -9,7 +9,7 @@ import { getLoggedEmail } from '../services/authService';
 import { getVoluntarioByEmail } from '../services/voluntarioService';
 import { obtenerReportePorVoluntarioId } from '../services/queriesSQL';
 
-const HistorialScreen = () => {
+export default function HistorialScreen() {
   const navigation = useNavigation();
 
   const [search, setSearch] = useState('');
@@ -234,7 +234,7 @@ const HistorialScreen = () => {
             mode="date"
             display={Platform.OS === 'ios' ? "inline" : "calendar"}
             onChange={onDateChange}
-            textColor={Platform.OS === 'ios' ? colors.darkBlue : undefined}
+            textColor={Platform.OS === 'ios' ? colors.verdeOscuro : undefined}
             themeVariant={Platform.OS === 'ios' ? "light" : undefined}
           />
         </View>
@@ -243,4 +243,3 @@ const HistorialScreen = () => {
   );
 };
 
-export default HistorialScreen;

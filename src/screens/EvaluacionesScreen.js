@@ -222,8 +222,8 @@ const EvaluacionesScreen = () => {
                 {mostrarRangoFechas && (
                   <>
                     <TouchableOpacity onPress={() => abrirPicker('Desde')} style={styles.datePicker}>
-                      <Text>Desde: {filtrosTemp.desde ? filtrosTemp.desde.toLocaleDateString() : '----'}</Text>
-                    </TouchableOpacity>
+                        <Text>Desde: {filtrosTemp.desde ? filtrosTemp.desde.toLocaleDateString() : '----'}</Text>
+                      </TouchableOpacity>
 
                     {filtrosTemp.estado === 'Entregada' && (
                       <TouchableOpacity onPress={() => abrirPicker('Hasta')} style={styles.datePicker}>
@@ -244,7 +244,7 @@ const EvaluacionesScreen = () => {
 
       <Modal visible={pickerType !== null} transparent animationType="fade">
         <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }} onPress={() => setPickerType(null)} />
-        <View style={{ backgroundColor: colors.white, padding: 16, borderRadius: 12, margin: 20 }}>
+        <View style={{ backgroundColor: colors.white, padding: 16 }}>
           <DateTimePicker
             value={pickerValue || new Date()}
             mode="date"

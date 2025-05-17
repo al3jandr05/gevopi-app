@@ -9,7 +9,7 @@ import { getLoggedEmail } from '../services/authService';
 import { getVoluntarioByEmail } from '../services/voluntarioService';
 import { obtenerReportePorVoluntarioId } from '../services/queriesSQL';
 
-const NecesidadesCapacitacionesScreen = () => {
+export default function NecesidadesCapacitacionesScreen() {
   const navigation = useNavigation();
 
   const [search, setSearch] = useState('');
@@ -244,4 +244,3 @@ const NecesidadesCapacitacionesScreen = () => {
   );
 };
 
-export default NecesidadesCapacitacionesScreen;
