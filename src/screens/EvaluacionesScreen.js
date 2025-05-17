@@ -11,7 +11,7 @@ import { getLoggedEmail } from '../services/authService';
 import { getVoluntarioByEmail } from '../services/voluntarioService';
 import { GET_EVALUACIONES } from '../services/queriesSQL';
 
-const EvaluacionesScreen = () => {
+export default function EvaluacionesScreen() {
   const navigation = useNavigation();
 
   const [search, setSearch] = useState('');
@@ -20,12 +20,14 @@ const EvaluacionesScreen = () => {
 
   const [filtrosAplicados, setFiltrosAplicados] = useState({
     estado: null,
+    tipo: null,
     desde: null,
     hasta: null,
   });
 
   const [filtrosTemp, setFiltrosTemp] = useState({
     estado: null,
+    tipo: null,
     desde: null,
     hasta: null,
   });
@@ -39,7 +41,10 @@ const EvaluacionesScreen = () => {
   const reiniciarOpacity = useRef(new Animated.Value(0)).current;
   const searchWidthAnim = useRef(new Animated.Value(1)).current;
 
-  const hayFiltrosActivos = filtrosAplicados.estado !== null || filtrosAplicados.desde || filtrosAplicados.hasta;
+  const hayFiltrosActivos = filtrosAplicados.estado !== null || 
+                          filtrosAplicados.tipo !== null || 
+                          filtrosAplicados.desde || 
+                          filtrosAplicados.hasta;
 
   useEffect(() => {
     const fetchVoluntarioId = async () => {
@@ -73,7 +78,6 @@ const EvaluacionesScreen = () => {
       setEvaluaciones(evaluaciones);
     }
   }, [data]);
-  
 
   const abrirPanel = () => {
     setFiltrosTemp({ ...filtrosAplicados });
@@ -92,7 +96,7 @@ const EvaluacionesScreen = () => {
 
   const reiniciarFiltros = () => {
     setSearch('');
-    setFiltrosAplicados({ estado: null, desde: null, hasta: null });
+    setFiltrosAplicados({ estado: null, tipo: null, desde: null, hasta: null });
 
     Animated.parallel([
       Animated.timing(reiniciarOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
@@ -120,17 +124,25 @@ const EvaluacionesScreen = () => {
 
   const filtrados = evaluaciones.filter(e => {
     const estado = filtrosAplicados.estado;
+    const tipo = filtrosAplicados.tipo;
     const desde = filtrosAplicados.desde;
     const hasta = filtrosAplicados.hasta;
     const tieneResultado = !!e.fechaResultado;
 
+    // Filtro por estado
     if (estado === 'Realizada' && tieneResultado) return false;
     if (estado === 'Entregada' && !tieneResultado) return false;
 
+    // Filtro por tipo
+    if (tipo === 'Fisica' && !e.titulo.toLowerCase().includes('fisica')) return false;
+    if (tipo === 'Emocional' && !e.titulo.toLowerCase().includes('emocional')) return false;
+
+    // Filtro por fecha
     const fecha = new Date(e.fechaRealizada);
     if (desde && fecha < desde) return false;
     if (hasta && fecha > hasta) return false;
 
+    // Filtro por búsqueda
     if (search.length > 0 && !e.titulo.toLowerCase().includes(search.toLowerCase())) return false;
 
     return true;
@@ -146,8 +158,8 @@ const EvaluacionesScreen = () => {
       </View>
 
       <View style={styles.filtersRow}>
-      <TouchableOpacity onPress={abrirPanel} style={[styles.filtroButton, { backgroundColor: hayFiltrosActivos ? colors.verdeOscuro : colors.white }]}>
-      <FontAwesome5 name="filter" size={18} color={hayFiltrosActivos ? colors.white : colors.verdeOscuro} />
+        <TouchableOpacity onPress={abrirPanel} style={[styles.filtroButton, { backgroundColor: hayFiltrosActivos ? colors.verdeOscuro : colors.white }]}>
+          <FontAwesome5 name="filter" size={18} color={hayFiltrosActivos ? colors.white : colors.verdeOscuro} />
         </TouchableOpacity>
 
         <Animated.View style={{ flex: searchWidthAnim }}>
@@ -174,8 +186,8 @@ const EvaluacionesScreen = () => {
           return (
             <View style={styles.card}>
               <Text style={styles.cardTitle}>{item.titulo}</Text>
-              <Text style={styles.cardSubtitle}>Fecha realizada: {item.fechaRealizada}</Text>
-              {entregada && <Text style={styles.cardSubtitle}>Resultado entregado: {item.fechaResultado}</Text>}
+              <Text style={styles.cardFecha}>Fecha realizada: {item.fechaRealizada}</Text>
+              {entregada && <Text style={styles.cardFecha}>Resultado entregado: {item.fechaResultado}</Text>}
               {entregada && (
                 <TouchableOpacity style={styles.verButton} onPress={() => navigation.navigate('ResultadoEvaluaciones', { evaluacion: item })}>
                   <Text style={styles.verButtonText}>Ver resultado</Text>
@@ -199,15 +211,39 @@ const EvaluacionesScreen = () => {
           <Animated.View style={[styles.modalContent, { transform: [{ translateY: panelAnim }] }]}>
             <Text style={styles.modalTitle}>Filtros</Text>
 
+            {/* Nuevo filtro por tipo de evaluación */}
+            <Text style={styles.filterLabel}>Tipo de Evaluación</Text>
+            <View style={styles.chipsRow}>
+              {['Fisica', 'Emocional'].map(tipo => (
+                <Pressable
+                  key={tipo}
+                  style={[styles.choiceChip, filtrosTemp.tipo === tipo && styles.choiceChipSelected]}
+                  onPress={() => setFiltrosTemp(prev => ({ 
+                    ...prev, 
+                    tipo: filtrosTemp.tipo === tipo ? null : tipo 
+                  }))}
+                >
+                  <Text style={{ color: filtrosTemp.tipo === tipo ? colors.white : colors.black }}>
+                    {tipo}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+
             <Text style={styles.filterLabel}>Estado de Evaluación</Text>
             <View style={styles.chipsRow}>
               {['Realizada', 'Entregada'].map(tipo => (
                 <Pressable
                   key={tipo}
                   style={[styles.choiceChip, filtrosTemp.estado === tipo && styles.choiceChipSelected]}
-                  onPress={() => setFiltrosTemp(prev => ({ ...prev, estado: tipo }))}
+                  onPress={() => setFiltrosTemp(prev => ({ 
+                    ...prev, 
+                    estado: filtrosTemp.estado === tipo ? null : tipo 
+                  }))}
                 >
-                  <Text style={{ color: filtrosTemp.estado === tipo ? colors.white : colors.black }}>{tipo}</Text>
+                  <Text style={{ color: filtrosTemp.estado === tipo ? colors.white : colors.black }}>
+                    {tipo}
+                  </Text>
                 </Pressable>
               ))}
             </View>
@@ -222,8 +258,8 @@ const EvaluacionesScreen = () => {
                 {mostrarRangoFechas && (
                   <>
                     <TouchableOpacity onPress={() => abrirPicker('Desde')} style={styles.datePicker}>
-                        <Text>Desde: {filtrosTemp.desde ? filtrosTemp.desde.toLocaleDateString() : '----'}</Text>
-                      </TouchableOpacity>
+                      <Text>Desde: {filtrosTemp.desde ? filtrosTemp.desde.toLocaleDateString() : '----'}</Text>
+                    </TouchableOpacity>
 
                     {filtrosTemp.estado === 'Entregada' && (
                       <TouchableOpacity onPress={() => abrirPicker('Hasta')} style={styles.datePicker}>
@@ -259,4 +295,3 @@ const EvaluacionesScreen = () => {
   );
 };
 
-export default EvaluacionesScreen;

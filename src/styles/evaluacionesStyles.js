@@ -58,18 +58,17 @@ export default StyleSheet.create({
     backgroundColor: colors.verdeHoverCard,
   },
   card: {
-    backgroundColor: colors.verdeHoverCard,
-    padding: 18,
-    borderRadius: 16,
-    marginBottom: 14,
-    shadowColor: colors.black,
-    shadowOpacity: 0.1,
-    borderLeftColor: colors.verdeOscuro,
+    backgroundColor: colors.white,
+    borderRadius: 10,
+    padding: 15,
+    width: '98%',
+    marginBottom: 10,
     borderLeftWidth: 4,
-
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
     shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 4,
+    borderLeftColor: colors.verdeCritico,
   },
   cardTitle: {
     fontSize: 18,
@@ -80,6 +79,11 @@ export default StyleSheet.create({
   cardSubtitle: {
     fontSize: 14,
     color: colors.black,
+  },
+  cardFecha: {
+    fontSize: 13,
+    marginTop: 6,
+    fontWeight: 'bold',
   },
   verButton: {
     backgroundColor: colors.verdeOscuro,
