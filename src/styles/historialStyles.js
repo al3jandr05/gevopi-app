@@ -13,9 +13,8 @@ export default StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  backArrow: {
-    fontSize: 28,
-    color: colors.verdeOscuro,
+  backButton: {
+    padding: 8,
   },
   headerTitle: {
     fontSize: 30,

@@ -16,9 +16,8 @@ export default StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
   },
-  backArrow: {
-    fontSize: 28,
-    color: colors.verdeOscuro,
+  backButton: {
+    padding: 8,
   },
   headerTitle: {
     fontSize: 28,
