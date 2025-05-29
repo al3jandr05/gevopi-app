@@ -107,28 +107,39 @@ export default function SolicitudesScreen() {
   const renderItem = ({ item }) => (
     <TouchableOpacity onPress={() => navigation.navigate('DetalleSolicitud', { solicitud: item })}>
       <View style={styles.card}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <Text style={styles.cardTitle}>{item.tipo}</Text>
-          <Text style={{
-            backgroundColor: getNivelColor(item.nivelEmergencia),
-            color: 'white',
-            paddingHorizontal: 10,
-            paddingVertical: 4,
-            borderRadius: 10,
-            fontSize: 12,
-            fontWeight: 'bold',
-            overflow: 'hidden',
-          }}>
-            {item.nivelEmergencia}
-          </Text>
+        {/* Encabezado de la tarjeta */}
+        <View style={styles.cardHeader}>
+          <View style={styles.cardTitleContainer}>
+            <Text style={styles.cardTitle}>{item.tipo}</Text>
+          </View>
+          <View style={[styles.priorityBadge, { backgroundColor: getNivelColor(item.nivelEmergencia) }]}>
+            <FontAwesome5 name="exclamation-circle" size={12} color="white" />
+            <Text style={styles.priorityText}>{item.nivelEmergencia}</Text>
+          </View>
         </View>
 
-        <Text style={styles.cardSubtitle}>{item.descripcion}</Text>
-        <Text style={styles.cardFecha}>📅 {new Date(item.fecha).toLocaleDateString()}</Text>
+        {/* Descripción */}
+        <View style={styles.descriptionContainer}>
+          <FontAwesome5 name="info-circle" size={14} color={colors.gray} />
+          <Text style={styles.cardSubtitle}>{item.descripcion}</Text>
+        </View>
 
-        <View style={{ height: 150, marginVertical: 10, borderRadius: 10, overflow: 'hidden' }}>
+        {/* Fecha y Estado */}
+        <View style={styles.infoRow}>
+          <View style={styles.infoItem}>
+            <FontAwesome5 name="calendar-alt" size={14} color={colors.verdeOscuro}/>
+            <Text style={styles.cardFecha}>{new Date(item.fecha).toLocaleDateString()}</Text>
+          </View>
+          <View style={styles.infoItem}>
+            <FontAwesome5 name="check-circle" size={14} color={colors.verdeOscuro}/>
+            <Text style={styles.cardState}>{item.estado}</Text>
+          </View>
+        </View>
+
+        {/* Mapa */}
+        <View style={styles.mapContainer}>
           <MapView
-            style={{ flex: 1 }}
+            style={styles.map}
             initialRegion={{
               latitude: parseFloat(item.latitud),
               longitude: parseFloat(item.longitud),
@@ -138,11 +149,15 @@ export default function SolicitudesScreen() {
             scrollEnabled={false}
             zoomEnabled={false}
           >
-            <Marker coordinate={{ latitude: parseFloat(item.latitud), longitude: parseFloat(item.longitud) }} />
+            <Marker coordinate={{ latitude: parseFloat(item.latitud), longitude: parseFloat(item.longitud) }}>
+              <FontAwesome5 name="map-marker-alt" size={24} color={colors.verdeOscuro} />
+            </Marker>
           </MapView>
+          <View style={styles.mapOverlay}>
+            <FontAwesome5 name="map-marked-alt" size={14} color={colors.gray} />
+            <Text style={styles.locationText}>Ver ubicación</Text>
+          </View>
         </View>
-
-        <Text style={styles.cardState}>Estado: {item.estado}</Text>
       </View>
     </TouchableOpacity>
   );

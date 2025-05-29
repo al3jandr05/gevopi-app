@@ -181,14 +181,18 @@ export default StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 25,
-    paddingTop: 40,
+    maxHeight: '90%',
   },
   
+  modalScrollContent: {
+    paddingBottom: 20,
+  },
+
   modalTitle: {
     fontSize: 22,
     fontWeight: 'bold',
     color: colors.verdeOscuro,
-    marginBottom: 30,
+    marginBottom: 20,
     textAlign: 'left',
   },
   infoRow: {
@@ -258,6 +262,7 @@ export default StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: 10,
     paddingHorizontal: 12,
+    paddingVertical: 8,
   },
 
   enviarButton: {
@@ -339,5 +344,94 @@ export default StyleSheet.create({
     fontSize: 14,
     color: colors.verdeOscuro,
     marginTop: 6,
+  },
+
+  carouselItem: {
+    width: width - 64,
+    paddingVertical: 10,
+  },
+  cardContainer: {
+    backgroundColor: colors.white,
+    borderRadius: 15,
+    padding: 16,
+    marginVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    width: '98%',
+    borderLeftWidth: 4,
+    borderLeftColor: colors.verdeOscuro,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.verdeOscuro,
+    flex: 1,
+  },
+  cardDate: {
+    fontSize: 12,
+    color: colors.gray,
+    marginLeft: 4,
+  },
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  cardDescription: {
+    fontSize: 14,
+    color: colors.dark,
+    lineHeight: 20,
+  },
+  emptyStateContainer: {
+    backgroundColor: colors.white,
+    width: '98%',
+    borderRadius: 15,
+    padding: 20,
+    marginVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  emptyStateText: {
+    marginTop: 10,
+    fontSize: 14,
+    color: colors.gray,
+    textAlign: 'center',
+  },
+  logoutButton: {
+    position: 'absolute',
+    top: 60,
+    right: 20,
+    backgroundColor: colors.verdeOscuro,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
   },
 });

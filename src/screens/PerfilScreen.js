@@ -12,7 +12,7 @@ import {
   Pressable,
   Image,
   ActivityIndicator,
-  KeyboardAvoidingView, Platform
+  KeyboardAvoidingView, Platform, Keyboard, Alert
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -25,7 +25,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 
 import { getUsuarios } from '../services/usuarioService';
 import { getVoluntarioByUsuarioId } from '../services/voluntarioService';
-import { getLoggedEmail } from '../services/authService';
+import { getLoggedEmail, logout } from '../services/authService';
 import { getVoluntarioByEmail } from '../services/voluntarioService';
 import { crearSolicitudAyuda, crearHistorialUbicacion } from '../services/mutationsNOSQL';
 import { obtenerReportePorVoluntarioId } from '../services/queriesSQL';
@@ -41,7 +41,9 @@ export default function PerfilScreen() {
   const [necesidadesIndex, setNecesidadesIndex] = useState(0);
   const [emergenciaVisible, setEmergenciaVisible] = useState(false);
   const [reporte, setReporte] = useState(null);
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
+  const modalOffsetAnim = useRef(new Animated.Value(0)).current;
 
   const historialData = [
     {
@@ -150,7 +152,6 @@ export default function PerfilScreen() {
     }
   };
 
-
   useFocusEffect(
     React.useCallback(() => {
       fadeAnim.setValue(0);
@@ -227,7 +228,6 @@ export default function PerfilScreen() {
     return () => clearInterval(intervalId);
   }, [voluntario?.id]);
 
-
   useEffect(() => {
     if (dotAnimsHistorial.current.length !== historialData.length) {
       dotAnimsHistorial.current = historialData.map((_, i) => new Animated.Value(i === historialIndex ? 1 : 0));
@@ -256,10 +256,36 @@ export default function PerfilScreen() {
     });
   }, [necesidadesIndex]);
 
+  useEffect(() => {
+    const keyboardWillShow = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => {
+        setKeyboardVisible(true);
+        Animated.timing(modalOffsetAnim, {
+          toValue: -200, // Ajusta este valor según necesites
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      }
+    );
 
+    const keyboardWillHide = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        setKeyboardVisible(false);
+        Animated.timing(modalOffsetAnim, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }).start();
+      }
+    );
 
-
-
+    return () => {
+      keyboardWillShow.remove();
+      keyboardWillHide.remove();
+    };
+  }, []);
 
   const openInfo = () => {
     setInfoVisible(true);
@@ -274,17 +300,12 @@ export default function PerfilScreen() {
   const closeEmergencia = () => {
     Animated.timing(panelAnim, { toValue: 1000, duration: 300, useNativeDriver: true }).start(() =>
       setEmergenciaVisible(false)
-
-
     );
   };
-
 
   const closeInfo = () => {
     Animated.timing(panelAnim, { toValue: 1000, duration: 300, useNativeDriver: true }).start(() =>
       setInfoVisible(false),
-
-
     );
   };
 
@@ -301,23 +322,58 @@ export default function PerfilScreen() {
     </View>
   );
 
-
-
-
-
-
   const renderCarouselItem = ({ item }) => (
-    <View style={{ width: width - 64 }}>
+    <TouchableOpacity
+      style={styles.carouselItem}
+      onPress={() => navigation.navigate(item.screen)}
+    >
       <Text style={styles.carouselSectionTitle}>{item.titulo}</Text>
-      {item.items.map((subItem, idx) => (
-        <TouchableOpacity key={idx} style={styles.widgetCard} onPress={() => navigation.navigate(item.screen)}>
-          <Text style={styles.itemTitle}>{subItem.titulo}</Text>
-          <Text style={styles.itemSubtitle}>{subItem.descripcion}</Text>
-          {subItem.fecha && <Text style={styles.itemSubtitle}>Fecha: {subItem.fecha}</Text>}
-        </TouchableOpacity>
-      ))}
-    </View>
+      {item.items && item.items.length > 0 ? (
+        item.items.map((subItem, index) => (
+          <View key={index} style={styles.cardContainer}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitle}>{subItem.titulo}</Text>
+              {subItem.fecha && (
+                <View style={styles.dateContainer}>
+                  <FontAwesome5 name="calendar-alt" size={12} color={colors.gray} />
+                  <Text style={styles.cardDate}>{subItem.fecha}</Text>
+                </View>
+              )}
+            </View>
+            <Text style={styles.cardDescription}>{subItem.descripcion}</Text>
+          </View>
+        ))
+      ) : (
+        <View style={styles.emptyStateContainer}>
+          <FontAwesome5 name="inbox" size={24} color={colors.gray} />
+          <Text style={styles.emptyStateText}>No hay información para mostrar</Text>
+        </View>
+      )}
+    </TouchableOpacity>
   );
+
+  const handleLogout = () => {
+    Alert.alert(
+      "Cerrar Sesión",
+      "¿Seguro que quieres cerrar sesión?",
+      [
+        {
+          text: "No",
+          style: "cancel"
+        },
+        {
+          text: "Sí",
+          onPress: () => {
+            logout();
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Login' }],
+            });
+          }
+        }
+      ]
+    );
+  };
 
   if (loadingVoluntario) {
     return (
@@ -330,7 +386,6 @@ export default function PerfilScreen() {
       </View>
     );
   }
-
 
   if (!voluntario) {
     return (
@@ -346,7 +401,12 @@ export default function PerfilScreen() {
         <Animated.View style={[styles.greenContainer, { transform: [{ translateY: blueAnim }] }]} />
 
         <View style={{ flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 20, paddingTop: 10 }}>
-
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={handleLogout}
+          >
+            <Ionicons name="log-out-outline" size={24} color={colors.white} />
+          </TouchableOpacity>
         </View>
         {/* Perfil */}
         <View style={styles.perfilContainer}>
@@ -384,8 +444,6 @@ export default function PerfilScreen() {
           </View>
 
         </View>
-
-
 
         {/* Historial */}
         <TouchableOpacity style={styles.sectionCard} activeOpacity={0.9} onPress={() => navigation.navigate('Historial')}>
@@ -451,21 +509,31 @@ export default function PerfilScreen() {
         </Animated.View>
       </Modal>
 
-      <KeyboardAvoidingView style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : ''}
-        keyboardVerticalOffset={Platform.select({
-          ios: 40,
-          android: 0
-        })}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
         <Modal transparent visible={emergenciaVisible} animationType="fade">
           <Pressable style={styles.modalBackdrop} onPress={closeEmergencia} />
 
-          <Animated.View style={[styles.modalContent, { transform: [{ translateY: panelAnim }] }]}>
-            <ScrollView contentContainerStyle={{ paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
-            
+          <Animated.View 
+            style={[
+              styles.modalContent, 
+              { 
+                transform: [
+                  { translateY: panelAnim },
+                  { translateY: modalOffsetAnim }
+                ] 
+              }
+            ]}
+          >
+            <Text style={styles.modalTitle}>Reportar Emergencia</Text>
 
-              <Text style={styles.modalTitle}>Reportar Emergencia</Text>
-
+            <ScrollView 
+              contentContainerStyle={styles.modalScrollContent}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
               {/* Tipo de emergencia */}
               <View style={styles.modalSection}>
                 <Text style={styles.modalLabel}>Tipo de emergencia</Text>
@@ -513,14 +581,23 @@ export default function PerfilScreen() {
                 <Text style={styles.modalLabel}>Descripción</Text>
                 <TextInput
                   placeholder="Describe brevemente la emergencia..."
-                  multiline
                   style={[styles.input, styles.descripcionInput]}
                   value={descripcion}
                   onChangeText={setDescripcion}
+                  multiline={false}
+                  returnKeyType="done"
+                  blurOnSubmit={true}
+                  onSubmitEditing={() => {
+                    Keyboard.dismiss();
+                  }}
                 />
               </View>
+
               {/* Botón */}
-              <TouchableOpacity style={styles.enviarButton} onPress={handleEnviarSolicitud}>
+              <TouchableOpacity 
+                style={styles.enviarButton} 
+                onPress={handleEnviarSolicitud}
+              >
                 <Text style={styles.enviarButtonText}>ENVIAR</Text>
               </TouchableOpacity>
             </ScrollView>

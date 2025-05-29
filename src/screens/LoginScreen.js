@@ -7,8 +7,6 @@ import {
   Animated,
   Dimensions,
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   Keyboard,
   Alert
@@ -19,13 +17,13 @@ import { useNavigation } from '@react-navigation/native';
 import styles from '../styles/loginStyles';
 import { login, getLoggedEmail } from '../services/authService';
 
-const { height, width } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 export default function LoginScreen() {
   const titleAnimY = useRef(new Animated.Value(0)).current;
   const blueAnim = useRef(new Animated.Value(-height)).current;
   const formOpacity = useRef(new Animated.Value(0)).current;
-  const subtitleOpacity = useRef(new Animated.Value(0)).current; // ✅ añadido
+  const subtitleOpacity = useRef(new Animated.Value(0)).current;
   const loadingOpacity = useRef(new Animated.Value(1)).current;
   const screenFadeOut = useRef(new Animated.Value(1)).current;
 
@@ -93,11 +91,9 @@ export default function LoginScreen() {
       const token = await login(username, password);
       console.log("TOKEN:", token);
 
-      // Aquí puedes usar getLoggedEmail si quieres
       const emailGuardado = getLoggedEmail();
       console.log("EMAIL GUARDADO:", emailGuardado);
 
-      // Animaciones y navegación
       Animated.parallel([
         Animated.timing(subtitleOpacity, {
           toValue: 0,
@@ -139,47 +135,48 @@ export default function LoginScreen() {
     }
   };
 
-
-  const toggleShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
-
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
-        <Animated.View style={[styles.container, { opacity: screenFadeOut }]}>
-          <Animated.View
-            style={{
-              alignItems: 'center',
-              position: 'absolute',
-              top: height / 2 - 80,
-              transform: [{ translateY: titleAnimY }],
-              zIndex: 10,
-              elevation: 10,
-            }}
-          >
-            <Animated.Text style={[styles.title, { color: interpolatedColor }]}>
-              GEVOPI
-            </Animated.Text>
-
-            <Animated.View style={{ opacity: loadingOpacity, marginTop: 15 }}>
-              <ActivityIndicator size="large" color={colors.verdeOscuro} />
-            </Animated.View>
-          </Animated.View>
-
-          {/* Fondo azul animado */}
-          <Animated.View style={[styles.blueContainer, { transform: [{ translateY: blueAnim }] }]} />
-
-          {/* Subtítulo */}
-          <Animated.Text style={[styles.subtitle, { opacity: subtitleOpacity }]}>
-            Tu bienestar también importa
+    <ScrollView 
+      contentContainerStyle={{ flexGrow: 1 }} 
+      keyboardShouldPersistTaps="handled"
+    >
+      <Animated.View style={[styles.container, { opacity: screenFadeOut }]}>
+        <Animated.View
+          style={{
+            alignItems: 'center',
+            position: 'absolute',
+            top: height / 2 - 80,
+            transform: [{ translateY: titleAnimY }],
+            zIndex: 10,
+            elevation: 10,
+          }}
+        >
+          <Animated.Text style={[styles.title, { color: interpolatedColor }]}>
+            GEVOPI
           </Animated.Text>
 
-          {/* Formulario */}
-          <Animated.View style={[styles.card, { opacity: formOpacity }]}>
-            <Text style={styles.cardTitle}>Inicia Sesión</Text>
+          <Animated.View style={{ opacity: loadingOpacity, marginTop: 15 }}>
+            <ActivityIndicator size="large" color={colors.verdeOscuro} />
+          </Animated.View>
+        </Animated.View>
 
-            <View style={styles.inputContainer}>
-              <Ionicons name="person-outline" size={22} color={colors.verdeOscuro} style={styles.icon} />
+        <Animated.View style={[styles.blueContainer, { transform: [{ translateY: blueAnim }] }]} />
+
+        <Animated.Text style={[styles.subtitle, { opacity: subtitleOpacity }]}>
+          Tu bienestar también importa
+        </Animated.Text>
+
+        <Animated.View style={[styles.card, { opacity: formOpacity }]}>
+          <Text style={styles.cardTitle}>Bienvenido de nuevo</Text>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Usuario</Text>
+            <View style={styles.inputWrapper}>
+              <Ionicons 
+                name="person-outline" 
+                size={20} 
+                style={styles.icon}
+              />
               <TextInput
                 placeholder="Ingrese su usuario"
                 style={styles.input}
@@ -188,31 +185,48 @@ export default function LoginScreen() {
                 onChangeText={setUsername}
               />
             </View>
+          </View>
 
-            <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={22} color={colors.verdeOscuro} style={styles.icon} />
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Contraseña</Text>
+            <View style={styles.inputWrapper}>
+              <Ionicons 
+                name="lock-closed-outline" 
+                size={20}
+                style={styles.icon}
+              />
               <TextInput
                 placeholder="Ingrese su contraseña"
                 secureTextEntry={!showPassword}
-                style={[styles.input, { paddingRight: 40 }]}
+                style={styles.input}
                 placeholderTextColor={colors.gray}
                 value={password}
                 onChangeText={setPassword}
               />
-              <TouchableOpacity style={styles.eyeIcon} onPress={toggleShowPassword}>
+              <TouchableOpacity 
+                style={styles.showPasswordButton}
+                onPress={() => setShowPassword(!showPassword)}
+              >
                 <Ionicons
                   name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                  size={22}
-                  color={colors.gray}
+                  size={20}
+                  color={colors.verdeOscuro}
                 />
               </TouchableOpacity>
             </View>
+          </View>
 
-            <TouchableOpacity style={styles.button} onPress={handleLogin}>
-              <Text style={styles.buttonText}>ENTRAR</Text>
-            </TouchableOpacity>
-          </Animated.View>
+          <TouchableOpacity 
+            style={styles.button} 
+            onPress={handleLogin}
+            activeOpacity={0.9}
+          >
+            <View style={styles.buttonContent}>
+              <Text style={styles.buttonText}>INICIAR SESIÓN</Text>
+            </View>
+          </TouchableOpacity>
         </Animated.View>
-      </ScrollView>
+      </Animated.View>
+    </ScrollView>
   );
 }

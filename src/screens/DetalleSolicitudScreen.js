@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
     View,
     Text,
     TouchableOpacity,
     ScrollView,
     TextInput,
-    Modal,
     Pressable,
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
@@ -15,14 +14,22 @@ import colors from '../themes/colors';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import voluntariosData from '../components/voluntarios';
 import { actualizarSolicitudEnProgreso } from '../services/mutationsNOSQL';
+import BottomSheet from '@gorhom/bottom-sheet';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function DetalleSolicitudScreen() {
     const navigation = useNavigation();
     const route = useRoute();
     const { solicitud: solicitudInicial } = route.params;
+    const bottomSheetRef = useRef(null);
+
+    // Variables para el BottomSheet
+    const snapPoints = useMemo(() => ['15%', '35%', '60%'], []);
+    const handleSheetChanges = useCallback((index) => {
+        console.log('handleSheetChanges', index);
+    }, []);
 
     const [solicitud, setSolicitud] = useState(solicitudInicial);
-    const [modalVisible, setModalVisible] = useState(false);
     const [voluntariosAsignados, setVoluntariosAsignados] = useState([]);
     const [busqueda, setBusqueda] = useState('');
     const [mostrarBusqueda, setMostrarBusqueda] = useState(false);
@@ -127,208 +134,190 @@ export default function DetalleSolicitudScreen() {
     };
 
     return (
-        <View style={styles.container}>
-            {/* Botón de volver */}
-            <TouchableOpacity
-                style={styles.backButton}
-                onPress={() => navigation.goBack()}
-            >
-                <MaterialIcons name="arrow-back" size={24} color={colors.white} />
-            </TouchableOpacity>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <View style={styles.container}>
+                {/* Botón de volver */}
+                <TouchableOpacity
+                    style={styles.backButton}
+                    onPress={() => navigation.goBack()}
+                >
+                    <MaterialIcons name="arrow-back" size={24} color={colors.white} />
+                </TouchableOpacity>
 
-            <MapView
-                style={styles.map}
-                initialRegion={{
-                    latitude: parseFloat(solicitud.latitud),
-                    longitude: parseFloat(solicitud.longitud),
-                    latitudeDelta: 0.01,
-                    longitudeDelta: 0.01,
-                }}
-            >
-                <Marker
-                    coordinate={{
+                <MapView
+                    style={styles.map}
+                    initialRegion={{
                         latitude: parseFloat(solicitud.latitud),
                         longitude: parseFloat(solicitud.longitud),
+                        latitudeDelta: 0.01,
+                        longitudeDelta: 0.01,
                     }}
-                    title="Ubicación"
-                    description={solicitud.descripcion}
-                />
-            </MapView>
+                >
+                    <Marker
+                        coordinate={{
+                            latitude: parseFloat(solicitud.latitud),
+                            longitude: parseFloat(solicitud.longitud),
+                        }}
+                        title="Ubicación"
+                        description={solicitud.descripcion}
+                    />
+                </MapView>
 
-            <TouchableOpacity
-                style={styles.bottomButton}
-                onPress={() => setModalVisible(true)}
-            >
-                <Text style={styles.bottomButtonText}>Ver Información</Text>
-            </TouchableOpacity>
+                <BottomSheet
+                    ref={bottomSheetRef}
+                    index={0}
+                    snapPoints={snapPoints}
+                    onChange={handleSheetChanges}
+                    enablePanDownToClose={false}
+                >
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Detalles de la Solicitud</Text>
 
-            {/* Modal Principal */}
-            <Modal transparent visible={modalVisible} animationType="fade">
-                <Pressable
-                    style={styles.modalBackdrop}
-                    onPress={() => setModalVisible(false)}
-                />
-                <View style={styles.modalContent}>
-                    <TouchableOpacity
-                        style={styles.closeButton}
-                        onPress={() => setModalVisible(false)}
-                    >
-                        <FontAwesome5 name="times" size={20} color={colors.verdeOscuro} />
-                    </TouchableOpacity>
+                        <ScrollView>
+                            <View style={styles.infoRow}>
+                                <FontAwesome5 name="file-alt" size={18} color={colors.verdeOscuro} />
+                                <Text style={styles.infoText}>{solicitud.descripcion}</Text>
+                            </View>
 
-                    <Text style={styles.modalTitle}>Detalles de la Solicitud</Text>
+                            <View style={styles.infoRow}>
+                                <FontAwesome5 name="calendar" size={18} color={colors.verdeOscuro} />
+                                <Text style={styles.infoText}>
+                                    {new Date(solicitud.fecha).toLocaleString()}
+                                </Text>
+                            </View>
 
-                    <ScrollView>
-                        <View style={styles.infoRow}>
-                            <FontAwesome5 name="file-alt" size={18} color={colors.verdeOscuro} />
-                            <Text style={styles.infoText}>{solicitud.descripcion}</Text>
-                        </View>
+                            <View style={styles.infoRow}>
+                                <FontAwesome5 name="heartbeat" size={18} color={colors.verdeOscuro} />
+                                <Text style={styles.infoText}>Tipo: {solicitud.tipo}</Text>
+                            </View>
 
-                        <View style={styles.infoRow}>
-                            <FontAwesome5 name="calendar" size={18} color={colors.verdeOscuro} />
-                            <Text style={styles.infoText}>
-                                {new Date(solicitud.fecha).toLocaleString()}
-                            </Text>
-                        </View>
+                            <View style={styles.infoRow}>
+                                <FontAwesome5
+                                    name="exclamation-triangle"
+                                    size={18}
+                                    color={colors.verdeOscuro}
+                                />
+                                <Text style={styles.infoText}>Nivel: {solicitud.nivelEmergencia}</Text>
+                            </View>
 
-                        <View style={styles.infoRow}>
-                            <FontAwesome5 name="heartbeat" size={18} color={colors.verdeOscuro} />
-                            <Text style={styles.infoText}>Tipo: {solicitud.tipo}</Text>
-                        </View>
+                            <View style={styles.infoRow}>
+                                <FontAwesome5
+                                    name="check-circle"
+                                    size={18}
+                                    color={colors.verdeOscuro}
+                                />
+                                <Text style={styles.infoText}>Estado: {solicitud.estado}</Text>
+                            </View>
 
-                        <View style={styles.infoRow}>
-                            <FontAwesome5
-                                name="exclamation-triangle"
-                                size={18}
-                                color={colors.verdeOscuro}
-                            />
-                            <Text style={styles.infoText}>Nivel: {solicitud.nivelEmergencia}</Text>
-                        </View>
+                            {solicitud.estado === 'En progreso' && (
+                                <Text style={[styles.infoText, { textAlign: 'center', marginTop: 10 }]}>
+                                    Tiempo restante: {segundosRestantes} segundos
+                                </Text>
+                            )}
 
-                        <View style={styles.infoRow}>
-                            <FontAwesome5
-                                name="check-circle"
-                                size={18}
-                                color={colors.verdeOscuro}
-                            />
-                            <Text style={styles.infoText}>Estado: {solicitud.estado}</Text>
-                        </View>
+                            {solicitud.estado === 'Sin responder' && (
+                                <>
+                                    <Text style={styles.modalTitle2}>Asignar Voluntarios</Text>
 
-                        {solicitud.estado === 'En progreso' && (
-                            <Text style={[styles.infoText, { textAlign: 'center', marginTop: 10 }]}>
-                                Tiempo restante: {segundosRestantes} segundos
-                            </Text>
-                        )}
-
-                        {solicitud.estado === 'Sin responder' && (
-                            <>
-                                <Text style={styles.modalTitle}>Asignar Voluntarios</Text>
-
-                                {voluntariosAsignados.length > 0 && (
-                                    <View style={styles.voluntariosAsignadosContainer}>
-                                        <Text style={styles.contadorVoluntarios}>
-                                        </Text>
-                                        {voluntariosAsignados.map((v) => (
-                                            <View key={v.ci} style={styles.voluntarioSeleccionado}>
-                                                <Text style={styles.voluntarioText}>{v.nombre} - CI: {v.ci}</Text>
-                                                <TouchableOpacity onPress={() => quitarVoluntario(v.ci)}>
-                                                    <Ionicons name="close-circle" size={20} color={colors.red} />
-                                                </TouchableOpacity>
-                                            </View>
-                                        ))}
-                                    </View>
-                                )}
-
-                                {!mostrarBusqueda ? (
-                                    <TouchableOpacity
-                                        style={styles.agregarVoluntarioBtn}
-                                        onPress={() => setMostrarBusqueda(true)}
-                                    >
-                                        <Text style={styles.agregarVoluntarioText}>+ Agregar voluntario</Text>
-                                    </TouchableOpacity>
-                                ) : (
-                                    <View style={styles.busquedaContainer}>
-                                        <TextInput
-                                            placeholder="Buscar por CI o nombre"
-                                            style={styles.input}
-                                            value={busqueda}
-                                            onChangeText={setBusqueda}
-                                            autoFocus={true}
-                                        />
-
-                                        <ScrollView style={styles.listaVoluntarios}>
-                                            {voluntariosFiltrados.length > 0 ? (
-                                                voluntariosFiltrados.map((v) => (
-                                                    <TouchableOpacity
-                                                        key={v.ci}
-                                                        style={styles.voluntarioItem}
-                                                        onPress={() => agregarVoluntario(v)}
-                                                    >
-                                                        <Text style={styles.voluntarioNombre}>
-                                                            {v.nombre} - CI: {v.ci}
-                                                        </Text>
-                                                    </TouchableOpacity>
-                                                ))
-                                            ) : (
-                                                <Text style={styles.sinResultados}>
-                                                    No se encontraron voluntarios
-                                                </Text>
-                                            )}
-                                        </ScrollView>
-                                    </View>
-                                )}
-
-                                <TouchableOpacity
-                                    style={[
-                                        styles.accionButton,
-                                        voluntariosAsignados.length === 0 && styles.accionButtonDisabled
-                                    ]}
-                                    onPress={confirmarAsignacion}
-                                    disabled={voluntariosAsignados.length === 0}
-                                >
-                                    <Text style={styles.accionButtonText}>
-                                        {voluntariosAsignados.length > 0
-                                            ? `Aceptar Asignaciones (${voluntariosAsignados.length}/5)`
-                                            : 'Asignar voluntarios'}
-                                    </Text>
-                                </TouchableOpacity>
-                            </>
-                        )}
-
-                        {solicitud.estado === 'En progreso' && (
-                            <TouchableOpacity
-                                style={[styles.accionButton, { backgroundColor: colors.red }]}
-                                onPress={cancelarSolicitud}
-                            >
-                                <Text style={styles.accionButtonText}>Cancelar Solicitud</Text>
-                            </TouchableOpacity>
-                        )}
-
-                        {solicitud.estado === 'Resuelto' && solicitud.ciVoluntariosAcudir?.length > 0 && (
-                            <>
-                                <Text style={styles.sectionTitle}>Voluntarios Asignados</Text>
-                                {solicitud.ciVoluntariosAcudir.map((ci, i) => {
-                                    const voluntario = voluntariosData.find(v => v.ci === ci);
-                                    return (
-                                        <View key={i} style={styles.voluntarioSeleccionado}>
-                                            <Text style={styles.voluntarioText}>
-                                                {voluntario ? `${voluntario.nombre} - CI: ${ci}` : `CI: ${ci}`}
+                                    {voluntariosAsignados.length > 0 && (
+                                        <View style={styles.voluntariosAsignadosContainer}>
+                                            <Text style={styles.contadorVoluntarios}>
                                             </Text>
+                                            {voluntariosAsignados.map((v) => (
+                                                <View key={v.ci} style={styles.voluntarioSeleccionado}>
+                                                    <Text style={styles.voluntarioText}>{v.nombre} - CI: {v.ci}</Text>
+                                                    <TouchableOpacity onPress={() => quitarVoluntario(v.ci)}>
+                                                        <Ionicons name="close-circle" size={20} color={colors.red} />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            ))}
                                         </View>
-                                    );
-                                })}
-                            </>
-                        )}
-                    </ScrollView>
+                                    )}
 
-                    <TouchableOpacity
-                        style={styles.closeActionButton}
-                        onPress={() => setModalVisible(false)}
-                    >
-                        <Text style={styles.closeActionButtonText}>Cerrar</Text>
-                    </TouchableOpacity>
-                </View>
-            </Modal>
-        </View>
+                                    {!mostrarBusqueda ? (
+                                        <TouchableOpacity
+                                            style={styles.agregarVoluntarioBtn}
+                                            onPress={() => setMostrarBusqueda(true)}
+                                        >
+                                            <Text style={styles.agregarVoluntarioText}>+ Agregar voluntario</Text>
+                                        </TouchableOpacity>
+                                    ) : (
+                                        <View style={styles.busquedaContainer}>
+                                            <TextInput
+                                                placeholder="Buscar por CI o nombre"
+                                                style={styles.input}
+                                                value={busqueda}
+                                                onChangeText={setBusqueda}
+                                                autoFocus={true}
+                                            />
+
+                                            <ScrollView style={styles.listaVoluntarios}>
+                                                {voluntariosFiltrados.length > 0 ? (
+                                                    voluntariosFiltrados.map((v) => (
+                                                        <TouchableOpacity
+                                                            key={v.ci}
+                                                            style={styles.voluntarioItem}
+                                                            onPress={() => agregarVoluntario(v)}
+                                                        >
+                                                            <Text style={styles.voluntarioNombre}>
+                                                                {v.nombre} - CI: {v.ci}
+                                                            </Text>
+                                                        </TouchableOpacity>
+                                                    ))
+                                                ) : (
+                                                    <Text style={styles.sinResultados}>
+                                                        No se encontraron voluntarios
+                                                    </Text>
+                                                )}
+                                            </ScrollView>
+                                        </View>
+                                    )}
+
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.accionButton,
+                                            voluntariosAsignados.length === 0 && styles.accionButtonDisabled
+                                        ]}
+                                        onPress={confirmarAsignacion}
+                                        disabled={voluntariosAsignados.length === 0}
+                                    >
+                                        <Text style={styles.accionButtonText}>
+                                            {voluntariosAsignados.length > 0
+                                                ? `Aceptar Asignaciones (${voluntariosAsignados.length}/5)`
+                                                : 'Asignar voluntarios'}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </>
+                            )}
+
+                            {solicitud.estado === 'En progreso' && (
+                                <TouchableOpacity
+                                    style={[styles.accionButton, { backgroundColor: colors.red }]}
+                                    onPress={cancelarSolicitud}
+                                >
+                                    <Text style={styles.accionButtonText}>Cancelar Solicitud</Text>
+                                </TouchableOpacity>
+                            )}
+
+                            {solicitud.estado === 'Resuelto' && solicitud.ciVoluntariosAcudir?.length > 0 && (
+                                <>
+                                    <Text style={styles.sectionTitle}>Voluntarios Asignados</Text>
+                                    {solicitud.ciVoluntariosAcudir.map((ci, i) => {
+                                        const voluntario = voluntariosData.find(v => v.ci === ci);
+                                        return (
+                                            <View key={i} style={styles.voluntarioSeleccionado}>
+                                                <Text style={styles.voluntarioText}>
+                                                    {voluntario ? `${voluntario.nombre} - CI: ${ci}` : `CI: ${ci}`}
+                                                </Text>
+                                            </View>
+                                        );
+                                    })}
+                                </>
+                            )}
+                        </ScrollView>
+                    </View>
+                </BottomSheet>
+            </View>
+        </GestureHandlerRootView>
     );
 }
