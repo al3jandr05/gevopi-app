@@ -167,7 +167,7 @@ export default function LoginScreen() {
         </Animated.Text>
 
         <Animated.View style={[styles.card, { opacity: formOpacity }]}>
-          <Text style={styles.cardTitle}>Bienvenido de nuevo</Text>
+          <Text style={styles.cardTitle}>Inicia Sesión</Text>
 
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Usuario</Text>

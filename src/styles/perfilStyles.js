@@ -6,7 +6,7 @@ const { width, height } = Dimensions.get('window');
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.fondo,
+    backgroundColor: colors.white,
   },
   perfilContainer: {
     alignItems: 'center',
@@ -26,16 +26,7 @@ export default StyleSheet.create({
     borderWidth: 3,
     borderColor: colors.verdeOscuro,
   },
-  blueContainer: {
-    position: 'absolute',
-    top: 0,
-    width: '100%',
-    height: height * 0.45,
-    backgroundColor: colors.verdePrincipal,
-    borderBottomLeftRadius: 50,
-    borderBottomRightRadius: 50,
-    zIndex: -1,
-  },
+
 
   greenContainer: {
     position: 'absolute',
