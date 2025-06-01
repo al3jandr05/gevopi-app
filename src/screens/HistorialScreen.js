@@ -5,8 +5,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
 import styles from '../styles/historialStyles';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
-import { getLoggedEmail } from '../services/authService';
-import { getVoluntarioByEmail } from '../services/voluntarioService';
+import { getLoggedCi } from '../services/authService';
+import { getVoluntarioByCi } from '../services/voluntarioService';
 import { obtenerReportePorVoluntarioId } from '../services/queriesSQL';
 
 export default function HistorialScreen() {
@@ -14,6 +14,7 @@ export default function HistorialScreen() {
 
   const [search, setSearch] = useState('');
   const [historial, setHistorial] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filtrosAplicados, setFiltrosAplicados] = useState({
     tipo: null,
     desde: null,
@@ -34,7 +35,110 @@ export default function HistorialScreen() {
   const reiniciarOpacity = useRef(new Animated.Value(0)).current;
   const searchWidthAnim = useRef(new Animated.Value(1)).current;
 
+  const fetchHistorial = async () => {
+    try {
+      setLoading(true);
+      const ci = await getLoggedCi();
+      console.log("Ci obtenido:", ci);
+      
+      const voluntario = await getVoluntarioByCi(ci);
+      console.log("Usuario matcheado:", voluntario);
+
+      if (!voluntario || !voluntario.id) {
+        console.log("No se encontró voluntario válido");
+        return;
+      }
+
+      const reportes = await obtenerReportePorVoluntarioId(voluntario.id.toString());
+      console.log("Reportes obtenidos:", reportes);
+
+      if (reportes?.length > 0) {
+        // Ordenar reportes por fecha (más reciente primero)
+        const reportesOrdenados = [...reportes].sort(
+          (a, b) => new Date(b.fechaGenerado) - new Date(a.fechaGenerado)
+        );
+
+        // Procesar todos los reportes que tengan datos
+        const items = [];
+        
+        reportesOrdenados.forEach(reporte => {
+          // Solo procesar reportes con datos
+          if (reporte.resumenFisico || reporte.resumenEmocional) {
+            if (reporte.resumenFisico) {
+              items.push({
+                tipo: "clinico",
+                titulo: "Resumen Clínico",
+                descripcion: reporte.resumenFisico,
+                fecha: reporte.fechaGenerado,
+                reporteId: reporte.id // Agregar ID para referencia
+              });
+            }
+
+            if (reporte.resumenEmocional) {
+              items.push({
+                tipo: "psicologico",
+                titulo: "Resumen Psicológico",
+                descripcion: reporte.resumenEmocional,
+                fecha: reporte.fechaGenerado,
+                reporteId: reporte.id // Agregar ID para referencia
+              });
+            }
+          }
+        });
+
+        if (items.length > 0) {
+          console.log("Items de historial procesados:", items);
+          setHistorial(items);
+        } else {
+          console.log("No se encontraron reportes con datos");
+          setHistorial([{
+            tipo: "informacion",
+            titulo: "Formulario Pendiente",
+            descripcion: "Por favor complete el formulario enviado a su correo",
+            fecha: new Date().toISOString()
+          }]);
+        }
+      } else {
+        console.log("No se encontraron reportes");
+        setHistorial([{
+          tipo: "informacion",
+          titulo: "Formulario Pendiente",
+          descripcion: "Por favor complete el formulario enviado a su correo",
+          fecha: new Date().toISOString()
+        }]);
+      }
+    } catch (err) {
+      console.error("Error completo cargando historial:", err);
+      setHistorial([{
+        tipo: "error",
+        titulo: "Error",
+        descripcion: "No se pudieron cargar los datos. Intente nuevamente más tarde.",
+        fecha: new Date().toISOString()
+      }]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchHistorial();
+  }, []);
+
   const hayFiltrosActivos = filtrosAplicados.tipo !== null || filtrosAplicados.desde || filtrosAplicados.hasta;
+
+  useEffect(() => {
+    if (hayFiltrosActivos) {
+      Animated.parallel([
+        Animated.timing(reiniciarOpacity, { toValue: 1, duration: 300, useNativeDriver: true }),
+        Animated.timing(searchWidthAnim, { toValue: 0.75, duration: 300, useNativeDriver: false }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(reiniciarOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
+        Animated.timing(searchWidthAnim, { toValue: 1, duration: 300, useNativeDriver: false }),
+      ]).start();
+    }
+  }, [hayFiltrosActivos]);
 
   const abrirPanel = () => {
     setFiltrosTemp({ ...filtrosAplicados });
@@ -54,11 +158,6 @@ export default function HistorialScreen() {
   const reiniciarFiltros = () => {
     setSearch('');
     setFiltrosAplicados({ tipo: null, desde: null, hasta: null });
-
-    Animated.parallel([
-      Animated.timing(reiniciarOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
-      Animated.timing(searchWidthAnim, { toValue: 1, duration: 300, useNativeDriver: false }),
-    ]).start();
   };
 
   const abrirPicker = (type) => {
@@ -72,54 +171,6 @@ export default function HistorialScreen() {
     setPickerType(null);
   };
 
-  useEffect(() => {
-    const fetchHistorial = async () => {
-      try {
-        const email = await getLoggedEmail();
-        const voluntario = await getVoluntarioByEmail(email);
-        if (!voluntario || !voluntario.id) return;
-  
-        const reportes = await obtenerReportePorVoluntarioId(voluntario.id.toString());
-        if (reportes?.length > 0) {
-          const masReciente = [...reportes].sort((a, b) => new Date(b.fechaGenerado) - new Date(a.fechaGenerado))[0];
-  
-          const items = [];
-  
-          if (masReciente.resumenFisico) {
-            items.push({
-              tipo: "clinico",
-              titulo: "Resumen Clínico",
-              descripcion: masReciente.resumenFisico,
-              fecha: masReciente.fechaGenerado,
-            });
-          }
-  
-          if (masReciente.resumenEmocional) {
-            items.push({
-              tipo: "psicologico",
-              titulo: "Resumen Psicológico",
-              descripcion: masReciente.resumenEmocional,
-              fecha: masReciente.fechaGenerado,
-            });
-          }
-  
-          setHistorial(items);
-        }
-      } catch (err) {
-        console.error("Error cargando historial:", err);
-      }
-    };
-  
-    fetchHistorial();
-  }, []);
-
-  if (hayFiltrosActivos) {
-    Animated.parallel([
-      Animated.timing(reiniciarOpacity, { toValue: 1, duration: 300, useNativeDriver: true }),
-      Animated.timing(searchWidthAnim, { toValue: 0.75, duration: 300, useNativeDriver: false }),
-    ]).start();
-  }
-
   const filtrados = historial.filter(e => {
     const tipo = filtrosAplicados.tipo;
     const desde = filtrosAplicados.desde;
@@ -127,24 +178,48 @@ export default function HistorialScreen() {
 
     if (tipo && e.tipo !== tipo) return false;
 
-    const fecha = new Date(e.fecha);
-    if (desde && fecha < desde) return false;
-    if (hasta && fecha > hasta) return false;
+    if (desde || hasta) {
+      const fecha = new Date(e.fecha);
+      if (isNaN(fecha.getTime())) {
+        console.warn("Fecha inválida encontrada:", e.fecha);
+        return false;
+      }
+      
+      if (desde) {
+        const fechaDesde = new Date(desde);
+        fechaDesde.setHours(0, 0, 0, 0);
+        if (fecha < fechaDesde) return false;
+      }
+      
+      if (hasta) {
+        const fechaHasta = new Date(hasta);
+        fechaHasta.setHours(23, 59, 59, 999);
+        if (fecha > fechaHasta) return false;
+      }
+    }
 
     if (search.length > 0 && !e.titulo.toLowerCase().includes(search.toLowerCase())) return false;
 
     return true;
   });
 
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Cargando historial...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity 
-                  onPress={() => navigation.goBack()}
-                  style={styles.backButton}
-                >
-                  <Ionicons name="arrow-back" size={24} color={colors.verdeOscuro} />
-                </TouchableOpacity>
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.verdeOscuro} />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Historial</Text>
       </View>
 
@@ -174,14 +249,21 @@ export default function HistorialScreen() {
         keyExtractor={(item, index) => index.toString()}
         ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No se encontraron resultados.{"\n"}Presione la X para reiniciar los filtros.</Text>
+            <Text style={styles.emptyText}>
+              {historial.length === 0 ? 
+                "No hay historial disponible." : 
+                "No se encontraron resultados.\nPresione la X para reiniciar los filtros."
+              }
+            </Text>
           </View>
         )}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>{item.titulo}</Text>
             <Text style={styles.cardSubtitle}>{item.descripcion}</Text>
-            <Text style={styles.cardFecha}>Fecha: {new Date(item.fecha).toLocaleDateString()}</Text>
+            <Text style={styles.cardFecha}>
+              Fecha: {item.fecha ? new Date(item.fecha).toLocaleDateString() : 'Fecha no disponible'}
+            </Text>
           </View>
         )}
       />
@@ -245,4 +327,3 @@ export default function HistorialScreen() {
     </View>
   );
 };
-

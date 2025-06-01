@@ -1,90 +1,55 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet } from 'react-native';
 import colors from '../themes/colors';
-
-const { width, height } = Dimensions.get('window');
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.fondo,
+    backgroundColor: colors.white,
   },
   backButton: {
-    position: 'absolute',
-    top: 40,
-    left: 20,
-    zIndex: 10,
-    backgroundColor: colors.verdeOscuro,
-    borderRadius: 20,
+    backgroundColor: colors.white,
     padding: 10,
+    borderRadius: 25,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   map: {
     flex: 1,
   },
-  bottomButton: {
-    position: 'absolute',
-    bottom: 30,
-    left: 20,
-    right: 20,
-    backgroundColor: colors.verdeOscuro,
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    elevation: 4,
-  },
-  bottomButtonText: {
-    color: colors.white,
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+  modalPreview: {
+    padding: 16,
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
+    backgroundColor: colors.white,
   },
   modalContent: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
+    padding: 16,
     backgroundColor: colors.white,
-    padding: 24,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: '80%',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    zIndex: 2,
   },
   modalTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: colors.verdeOscuro,
-    marginBottom: 16,
+    marginBottom: 10,
     textAlign: 'center',
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-    gap: 10,
+    marginBottom: 15,
+    paddingHorizontal: 10,
   },
   infoText: {
     fontSize: 16,
-    color: colors.dark,
-    flexShrink: 1,
-  },
-  closeActionButton: {
-    marginTop: 20,
-    backgroundColor: colors.verdeOscuro,
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  closeActionButtonText: {
-    color: colors.white,
-    fontWeight: 'bold',
-    fontSize: 16,
+    marginLeft: 10,
+    color: colors.text,
+    flex: 1,
   },
   accionButton: {
     marginTop: 16,

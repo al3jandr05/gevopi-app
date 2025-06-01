@@ -17,7 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import colors from '../themes/colors';
 import { useNavigation } from '@react-navigation/native';
 import styles from '../styles/loginStyles';
-import { login, getLoggedEmail } from '../services/authService';
+import { login, getLoggedCi } from '../services/authService';
 
 const { height, width } = Dimensions.get('window');
 
@@ -25,7 +25,7 @@ export default function LoginScreen() {
   const titleAnimY = useRef(new Animated.Value(0)).current;
   const blueAnim = useRef(new Animated.Value(-height)).current;
   const formOpacity = useRef(new Animated.Value(0)).current;
-  const subtitleOpacity = useRef(new Animated.Value(0)).current; // ✅ añadido
+  const subtitleOpacity = useRef(new Animated.Value(0)).current; 
   const loadingOpacity = useRef(new Animated.Value(1)).current;
   const screenFadeOut = useRef(new Animated.Value(1)).current;
 
@@ -93,9 +93,8 @@ export default function LoginScreen() {
       const token = await login(username, password);
       console.log("TOKEN:", token);
 
-      // Aquí puedes usar getLoggedEmail si quieres
-      const emailGuardado = getLoggedEmail();
-      console.log("EMAIL GUARDADO:", emailGuardado);
+      const emailGuardado = getLoggedCi ();
+      console.log("CI GUARDADO:", emailGuardado);
 
       // Animaciones y navegación
       Animated.parallel([
@@ -134,8 +133,12 @@ export default function LoginScreen() {
       });
 
     } catch (error) {
-      Alert.alert('Error de autenticación', 'Usuario o contraseña incorrectos');
-      console.error("Error al iniciar sesión:", error);
+      let errorMessage = 'Error de autenticación';
+      if (error.message.includes('El CI debe ser un número')) {
+        errorMessage = 'El CI debe contener solo números';
+      }
+      Alert.alert('Error', errorMessage);
+      console.error("Error completo:", error);
     }
   };
 
@@ -186,6 +189,7 @@ export default function LoginScreen() {
                 placeholderTextColor={colors.gray}
                 value={username}
                 onChangeText={setUsername}
+                keyboardType="numeric" 
               />
             </View>
 

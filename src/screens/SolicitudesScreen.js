@@ -11,8 +11,8 @@ import styles from '../styles/solicitudesStyles';
 import colors from '../themes/colors';
 import { useNavigation } from '@react-navigation/native';
 
-import { getLoggedEmail } from '../services/authService';
-import { getVoluntarioByEmail } from '../services/voluntarioService';
+import { getLoggedCi } from '../services/authService';
+import { getVoluntarioByCi } from '../services/voluntarioService';
 import { obtenerTodasSolicitudes } from '../services/queriesNOSQL';
 
 export default function SolicitudesScreen() {
@@ -36,8 +36,8 @@ export default function SolicitudesScreen() {
 
   const cargarSolicitudes = async () => {
     try {
-      const email = getLoggedEmail();
-      const voluntario = await getVoluntarioByEmail(email);
+      const ci = getLoggedCi();
+      const voluntario = await getVoluntarioByCi(ci);
       const todas = await obtenerTodasSolicitudes();
       const propias = todas.filter(s => s.voluntarioId !== voluntario.id.toString());
       setSolicitudes(propias);

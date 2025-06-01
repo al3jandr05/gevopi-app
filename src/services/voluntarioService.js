@@ -16,6 +16,11 @@ export const getVoluntarios = async () => {
     return voluntarios.find(v => v.email === email);
   };
 
+    export const getVoluntarioByCi = async (ci) => {
+    const voluntarios = await getVoluntarios();
+    return voluntarios.find(v => v.ci === ci);
+  };
+
 export const getVoluntarioByUsuarioId = async (id) => {
     const token = getToken();
     const response = await api.get(`/voluntario/voluntarios/${id}`, {

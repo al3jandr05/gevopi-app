@@ -35,48 +35,102 @@ export default function NecesidadesCapacitacionesScreen() {
 
   const [items, setItems] = useState([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const email = await getLoggedEmail(); 
-        const voluntario = await getVoluntarioByEmail(email);
+  const fetchData = async () => {
+    try {
+      const email = await getLoggedEmail(); 
+      const voluntario = await getVoluntarioByEmail(email);
 
-        console.log("Usuario matcheado:", voluntario);
+      console.log("Usuario matcheado:", voluntario);
 
-        if (!voluntario || !voluntario.id) return;
-  
-        const reportes = await obtenerReportePorVoluntarioId(voluntario.id.toString());
-  
-        if (reportes?.length > 0) {
-          const masReciente = [...reportes].sort(
-            (a, b) => new Date(b.fechaGenerado) - new Date(a.fechaGenerado)
-          )[0];
+      if (!voluntario || !voluntario.id) {
+        console.log("No se encontró voluntario válido");
+        return;
+      }
+
+      const reportes = await obtenerReportePorVoluntarioId(voluntario.id.toString());
+      console.log("Reportes obtenidos:", reportes);
+
+      if (reportes?.length > 0) {
+        // Ordenar reportes por fecha (más reciente primero)
+        const reportesOrdenados = [...reportes].sort(
+          (a, b) => new Date(b.fechaGenerado) - new Date(a.fechaGenerado)
+        );
         
-          const necesidades = masReciente.necesidades?.map((n) => ({
+        // Buscar el primer reporte que tenga necesidades o capacitaciones
+        const reporteConDatos = reportesOrdenados.find(r => 
+          (r.necesidades && r.necesidades.length > 0) || 
+          (r.capacitaciones && r.capacitaciones.length > 0)
+        );
+
+        if (reporteConDatos) {
+          console.log("Reporte con datos encontrado:", reporteConDatos);
+          
+          const necesidades = reporteConDatos.necesidades?.map((n) => ({
             tipo: "necesidad",
             titulo: n.tipo,
             descripcion: n.descripcion,
-            fecha: masReciente.fechaGenerado,
+            fecha: reporteConDatos.fechaGenerado,
           })) || [];
         
-          const capacitaciones = masReciente.capacitaciones?.map((c) => ({
+          const capacitaciones = reporteConDatos.capacitaciones?.map((c) => ({
             tipo: "capacitacion",
             titulo: c.nombre,
             descripcion: c.descripcion,
-            fecha: masReciente.fechaGenerado,
+            fecha: reporteConDatos.fechaGenerado,
           })) || [];
         
-          setItems([...necesidades, ...capacitaciones]);
+          const allItems = [...necesidades, ...capacitaciones];
+          console.log("Items procesados:", allItems);
+          setItems(allItems);
+        } else {
+          console.log("No se encontraron reportes con datos");
+          setItems([{
+            tipo: "informacion",
+            titulo: "Formulario Pendiente",
+            descripcion: "Por favor complete el formulario enviado a su correo",
+            fecha: new Date().toISOString()
+          }]);
         }
-      } catch (error) {
-        console.error("Error cargando necesidades/capacitaciones:", error);
+      } else {
+        console.log("No se encontraron reportes");
+        setItems([{
+          tipo: "informacion",
+          titulo: "Formulario Pendiente",
+          descripcion: "Por favor complete el formulario enviado a su correo",
+          fecha: new Date().toISOString()
+        }]);
       }
-    };
-  
+    } catch (error) {
+      console.error("Error cargando necesidades/capacitaciones:", error);
+      setItems([{
+        tipo: "error",
+        titulo: "Error",
+        descripcion: "No se pudieron cargar los datos. Intente nuevamente más tarde.",
+        fecha: new Date().toISOString()
+      }]);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, []);
 
   const hayFiltrosActivos = filtrosAplicados.tipo !== null || filtrosAplicados.desde || filtrosAplicados.hasta;
+
+  // Mover las animaciones a useEffect
+  useEffect(() => {
+    if (hayFiltrosActivos) {
+      Animated.parallel([
+        Animated.timing(reiniciarOpacity, { toValue: 1, duration: 300, useNativeDriver: true }),
+        Animated.timing(searchWidthAnim, { toValue: 0.75, duration: 300, useNativeDriver: false }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(reiniciarOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
+        Animated.timing(searchWidthAnim, { toValue: 1, duration: 300, useNativeDriver: false }),
+      ]).start();
+    }
+  }, [hayFiltrosActivos]);
 
   const abrirPanel = () => {
     setFiltrosTemp({ ...filtrosAplicados });
@@ -96,11 +150,6 @@ export default function NecesidadesCapacitacionesScreen() {
   const reiniciarFiltros = () => {
     setSearch('');
     setFiltrosAplicados({ tipo: null, desde: null, hasta: null });
-
-    Animated.parallel([
-      Animated.timing(reiniciarOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
-      Animated.timing(searchWidthAnim, { toValue: 1, duration: 300, useNativeDriver: false }),
-    ]).start();
   };
 
   const abrirPicker = (type) => {
@@ -114,24 +163,36 @@ export default function NecesidadesCapacitacionesScreen() {
     setPickerType(null);
   };
 
-  if (hayFiltrosActivos) {
-    Animated.parallel([
-      Animated.timing(reiniciarOpacity, { toValue: 1, duration: 300, useNativeDriver: true }),
-      Animated.timing(searchWidthAnim, { toValue: 0.75, duration: 300, useNativeDriver: false }),
-    ]).start();
-  }
-
   const filtrados = items.filter(e => {
     const tipo = filtrosAplicados.tipo;
     const desde = filtrosAplicados.desde;
     const hasta = filtrosAplicados.hasta;
 
+    // Filtro por tipo
     if (tipo && e.tipo !== tipo) return false;
 
-    const fecha = new Date(e.fecha);
-    if (desde && fecha < desde) return false;
-    if (hasta && fecha > hasta) return false;
+    // Filtro por fechas - mejorado
+    if (desde || hasta) {
+      const fecha = new Date(e.fecha);
+      if (isNaN(fecha.getTime())) {
+        console.warn("Fecha inválida encontrada:", e.fecha);
+        return false;
+      }
+      
+      if (desde) {
+        const fechaDesde = new Date(desde);
+        fechaDesde.setHours(0, 0, 0, 0);
+        if (fecha < fechaDesde) return false;
+      }
+      
+      if (hasta) {
+        const fechaHasta = new Date(hasta);
+        fechaHasta.setHours(23, 59, 59, 999);
+        if (fecha > fechaHasta) return false;
+      }
+    }
 
+    // Filtro por búsqueda
     if (search.length > 0 && !e.titulo.toLowerCase().includes(search.toLowerCase())) return false;
 
     return true;
@@ -175,14 +236,21 @@ export default function NecesidadesCapacitacionesScreen() {
         keyExtractor={(item, index) => index.toString()}
         ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No se encontraron resultados.{"\n"}Presione la X para reiniciar los filtros.</Text>
+            <Text style={styles.emptyText}>
+              {items.length === 0 ? 
+                "No hay necesidades o capacitaciones disponibles." : 
+                "No se encontraron resultados.\nPresione la X para reiniciar los filtros."
+              }
+            </Text>
           </View>
         )}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>{item.titulo}</Text>
             <Text style={styles.cardSubtitle}>{item.descripcion}</Text>
-            <Text style={styles.cardFecha}>Fecha: {new Date(item.fecha).toLocaleDateString()}</Text>
+            <Text style={styles.cardFecha}>
+              Fecha: {item.fecha ? new Date(item.fecha).toLocaleDateString() : 'Fecha no disponible'}
+            </Text>
           </View>
         )}
       />
@@ -246,4 +314,3 @@ export default function NecesidadesCapacitacionesScreen() {
     </View>
   );
 };
-

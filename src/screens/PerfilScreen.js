@@ -25,10 +25,10 @@ import { Dropdown } from 'react-native-element-dropdown';
 
 import { getUsuarios } from '../services/usuarioService';
 import { getVoluntarioByUsuarioId } from '../services/voluntarioService';
-import { getLoggedEmail } from '../services/authService';
-import { getVoluntarioByEmail } from '../services/voluntarioService';
+import { getLoggedCi } from '../services/authService';
+import { getVoluntarioByCi } from '../services/voluntarioService';
 import { crearSolicitudAyuda, crearHistorialUbicacion } from '../services/mutationsNOSQL';
-import { obtenerReportePorVoluntarioId } from '../services/queriesSQL';
+import { obtenerReportePorVoluntarioId, obtenerDatosCarrusel } from '../services/queriesSQL';
 
 const { width } = Dimensions.get('window');
 const { height } = Dimensions.get('window');
@@ -40,44 +40,6 @@ export default function PerfilScreen() {
   const [historialIndex, setHistorialIndex] = useState(0);
   const [necesidadesIndex, setNecesidadesIndex] = useState(0);
   const [emergenciaVisible, setEmergenciaVisible] = useState(false);
-  const [reporte, setReporte] = useState(null);
-
-
-  const historialData = [
-    {
-      titulo: 'Historial Clínico',
-      screen: 'Historial',
-      items: reporte
-        ? [{ titulo: 'Resumen Físico', descripcion: reporte.resumenFisico, fecha: new Date(reporte.fechaGenerado).toLocaleDateString() }]
-        : [],
-    },
-    {
-      titulo: 'Historial Psicológico',
-      screen: 'Historial',
-      items: reporte
-        ? [{ titulo: 'Resumen Emocional', descripcion: reporte.resumenEmocional, fecha: new Date(reporte.fechaGenerado).toLocaleDateString() }]
-        : [],
-    },
-  ];
-
-  const necesidadesData = [
-    {
-      titulo: 'Necesidades',
-      screen: 'NecesidadesCapacitaciones',
-      items: reporte?.necesidades?.map((n) => ({
-        titulo: n.tipo,
-        descripcion: n.descripcion,
-      })) || [],
-    },
-    {
-      titulo: 'Capacitaciones',
-      screen: 'NecesidadesCapacitaciones',
-      items: reporte?.capacitaciones?.map((c) => ({
-        titulo: c.nombre,
-        descripcion: c.descripcion,
-      })) || [],
-    },
-  ];
 
   const dotAnimsHistorial = useRef([]);
   const dotAnimsNecesidades = useRef([]);
@@ -95,6 +57,95 @@ export default function PerfilScreen() {
   const [descripcion, setDescripcion] = useState('');
   const [nivel, setNivel] = useState('');
 
+  const [carruselData, setCarruselData] = useState({
+    necesidades: [],
+    capacitaciones: [],
+    resumenFisico: null,
+    resumenEmocional: null,
+    tieneDatos: false,
+    fecha: null,
+    esReporteAnterior: false
+  });
+
+  const getHistorialData = () => {
+    if (!carruselData) return [];
+    
+    const formatFecha = (fechaString) => {
+      if (!fechaString) return 'Fecha no disponible';
+      try {
+        const fecha = new Date(fechaString);
+        return isNaN(fecha.getTime()) ? 'Fecha no disponible' : fecha.toLocaleDateString('es-ES');
+      } catch (e) {
+        return 'Fecha no disponible';
+      }
+    };
+
+    return [
+      {
+        titulo: 'Historial Clínico',
+        screen: 'Historial',
+        items: carruselData.resumenFisico 
+          ? [{ 
+              titulo: 'Resumen Físico', 
+              descripcion: carruselData.resumenFisico, 
+              fecha: formatFecha(carruselData.fecha)
+            }]
+          : [],
+      },
+      {
+        titulo: 'Historial Psicológico',
+        screen: 'Historial',
+        items: carruselData.resumenEmocional
+          ? [{ 
+              titulo: 'Resumen Emocional', 
+              descripcion: carruselData.resumenEmocional, 
+              fecha: formatFecha(carruselData.fecha)
+            }]
+          : [],
+      },
+    ];
+  };
+
+  const getNecesidadesData = () => {
+    if (!carruselData) return [];
+    
+    const necesidades = carruselData.necesidades?.length > 0 
+      ? carruselData.necesidades.map(n => ({
+          ...n,
+          esPlaceholder: false
+        }))
+      : [{
+          titulo: "Formulario Pendiente",
+          descripcion: "Por favor complete el formulario enviado a su correo",
+          esPlaceholder: true
+        }];
+
+    const capacitaciones = carruselData.capacitaciones?.length > 0
+      ? carruselData.capacitaciones.map(c => ({
+          ...c,
+          esPlaceholder: false
+        }))
+      : [{
+          titulo: "Formulario Pendiente", 
+          descripcion: "Por favor complete el formulario enviado a su correo",
+          esPlaceholder: true
+        }];
+
+    return [
+      {
+        titulo: 'Necesidades',
+        screen: 'NecesidadesCapacitaciones',
+        items: necesidades
+      },
+      {
+        titulo: 'Capacitaciones',
+        screen: 'NecesidadesCapacitaciones',
+        items: capacitaciones
+      }
+    ];
+  };
+
+
   const handleEnviarSolicitud = async () => {
     if (!tipo || !descripcion || !nivel) {
       alert('Por favor completa todos los campos');
@@ -102,7 +153,6 @@ export default function PerfilScreen() {
     }
 
     try {
-      // 1. Permiso y ubicación
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         alert('Permiso de ubicación denegado');
@@ -113,21 +163,17 @@ export default function PerfilScreen() {
       const latitud = location.coords.latitude;
       const longitud = location.coords.longitude;
 
-      // 2. Fecha actual ISO
       const fecha = new Date().toISOString();
 
-      // 3. Convertir nivel a ENUM
       const nivelNum = parseInt(nivel);
       const nivelEnum =
         nivelNum <= 2 ? 'BAJO' : nivelNum <= 3 ? 'MEDIO' : 'ALTO';
 
-      // 4. Verificar ID
       if (!voluntario || !voluntario.id) {
         alert('No se pudo obtener ID del voluntario');
         return;
       }
 
-      // 5. Enviar a backend usando función modular
       await crearSolicitudAyuda({
         tipo,
         descripcion,
@@ -138,7 +184,6 @@ export default function PerfilScreen() {
         longitud,
       });
 
-      // 6. Reset y feedback
       alert('Solicitud de ayuda enviada correctamente');
       setEmergenciaVisible(false);
       setTipo('');
@@ -149,7 +194,6 @@ export default function PerfilScreen() {
       alert('Error al enviar solicitud. Revisa consola.');
     }
   };
-
 
   useFocusEffect(
     React.useCallback(() => {
@@ -164,12 +208,15 @@ export default function PerfilScreen() {
   useEffect(() => {
     const fetchVoluntario = async () => {
       try {
-        const email = getLoggedEmail();
-        console.log(email);
-        const voluntarioData = await getVoluntarioByEmail(email);
+        setLoadingVoluntario(true);
+        const ci = getLoggedCi();
+        console.log("Buscando voluntario con CI:", ci); // Agrega log para debug
 
-        if (!voluntarioData) {
-          console.warn('Voluntario no encontrado para:', email);
+        const voluntarioData = await getVoluntarioByCi(ci);
+        console.log("Datos recibidos:", voluntarioData);
+
+        if (!voluntarioData || !voluntarioData.id) {
+          console.log("No se encontró voluntario válido");
           setVoluntario(null);
           return;
         }
@@ -177,15 +224,92 @@ export default function PerfilScreen() {
         setVoluntario(voluntarioData);
         const reportes = await obtenerReportePorVoluntarioId(voluntarioData.id.toString());
 
-        if (reportes && reportes.length > 0) {
-          const masReciente = [...reportes].sort((a, b) => new Date(b.fechaGenerado) - new Date(a.fechaGenerado))[0];
-          setReporte(masReciente);
+        if (reportes?.length > 0) {
+          // Ordenar reportes por fecha (más reciente primero)
+          const reportesOrdenados = [...reportes].sort(
+            (a, b) => new Date(b.fechaGenerado) - new Date(a.fechaGenerado)
+          );
+          
+          // Buscar el PRIMER reporte que tenga necesidades o capacitaciones (igual que NecesidadesCapacitaciones)
+          const reporteConDatos = reportesOrdenados.find(r => 
+            (r.necesidades && r.necesidades.length > 0) || 
+            (r.capacitaciones && r.capacitaciones.length > 0)
+          );
+
+          if (reporteConDatos) {
+            console.log("Reporte con datos encontrado:", {
+              necesidades: reporteConDatos.necesidades?.length,
+              capacitaciones: reporteConDatos.capacitaciones?.length,
+              fecha: reporteConDatos.fechaGenerado
+            });
+            
+            setCarruselData({
+              necesidades: reporteConDatos.necesidades || [],
+              capacitaciones: reporteConDatos.capacitaciones || [],
+              resumenFisico: reporteConDatos.resumenFisico,
+              resumenEmocional: reporteConDatos.resumenEmocional,
+              tieneDatos: true,
+              fecha: reporteConDatos.fechaGenerado,
+              esReporteAnterior: reporteConDatos !== reportesOrdenados[0]
+            });
+          } else {
+            console.log("No se encontraron reportes con necesidades/capacitaciones");
+            setCarruselData({
+              necesidades: [{
+                tipo: "Formulario Pendiente",
+                descripcion: "Por favor complete el formulario enviado a su correo",
+                esPlaceholder: true
+              }],
+              capacitaciones: [{
+                nombre: "Formulario Pendiente", 
+                descripcion: "Por favor complete el formulario enviado a su correo",
+                esPlaceholder: true
+              }],
+              resumenFisico: null,
+              resumenEmocional: null,
+              tieneDatos: false,
+              fecha: null
+            });
+          }
+        } else {
+          console.log("No se encontraron reportes");
+          setCarruselData({
+            necesidades: [{
+              tipo: "Formulario Pendiente",
+              descripcion: "Por favor complete el formulario enviado a su correo",
+              esPlaceholder: true
+            }],
+            capacitaciones: [{
+              nombre: "Formulario Pendiente", 
+              descripcion: "Por favor complete el formulario enviado a su correo",
+              esPlaceholder: true
+            }],
+            resumenFisico: null,
+            resumenEmocional: null,
+            tieneDatos: false,
+            fecha: null
+          });
         }
       } catch (error) {
         console.error('Error al cargar voluntario:', error);
+        setCarruselData({
+          necesidades: [{
+            tipo: "Error",
+            descripcion: "No se pudieron cargar los datos. Intente nuevamente más tarde.",
+            esPlaceholder: true
+          }],
+          capacitaciones: [{
+            nombre: "Error", 
+            descripcion: "No se pudieron cargar los datos. Intente nuevamente más tarde.",
+            esPlaceholder: true
+          }],
+          resumenFisico: null,
+          resumenEmocional: null,
+          tieneDatos: false,
+          fecha: null
+        });
       } finally {
         setLoadingVoluntario(false);
-
         Animated.timing(blueAnim, {
           toValue: 0,
           duration: 800,
@@ -195,8 +319,8 @@ export default function PerfilScreen() {
     };
 
     fetchVoluntario();
-
   }, []);
+
 
   useEffect(() => {
     let intervalId;
@@ -205,8 +329,8 @@ export default function PerfilScreen() {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') return;
 
-      const email = getLoggedEmail();
-      const voluntario = await getVoluntarioByEmail(email);
+      const ci = getLoggedCi();
+      const voluntario = await getVoluntarioByCi(ci);
       if (!voluntario) return;
 
       intervalId = setInterval(async () => {
@@ -227,10 +351,14 @@ export default function PerfilScreen() {
     return () => clearInterval(intervalId);
   }, [voluntario?.id]);
 
-
+  // Corregido: useEffect para animaciones del historial
   useEffect(() => {
-    if (dotAnimsHistorial.current.length !== historialData.length) {
-      dotAnimsHistorial.current = historialData.map((_, i) => new Animated.Value(i === historialIndex ? 1 : 0));
+    const currentHistorialData = getHistorialData();
+    
+    if (dotAnimsHistorial.current.length !== currentHistorialData.length) {
+      dotAnimsHistorial.current = currentHistorialData.map((_, i) => 
+        new Animated.Value(i === historialIndex ? 1 : 0)
+      );
     }
 
     dotAnimsHistorial.current.forEach((anim, i) => {
@@ -240,11 +368,16 @@ export default function PerfilScreen() {
         useNativeDriver: false,
       }).start();
     });
-  }, [historialIndex]);
+  }, [historialIndex, carruselData]); // Agregada dependencia carruselData
 
+  // Corregido: useEffect para animaciones de necesidades
   useEffect(() => {
-    if (dotAnimsNecesidades.current.length !== necesidadesData.length) {
-      dotAnimsNecesidades.current = necesidadesData.map((_, i) => new Animated.Value(i === necesidadesIndex ? 1 : 0));
+    const currentNecesidadesData = getNecesidadesData();
+    
+    if (dotAnimsNecesidades.current.length !== currentNecesidadesData.length) {
+      dotAnimsNecesidades.current = currentNecesidadesData.map((_, i) => 
+        new Animated.Value(i === necesidadesIndex ? 1 : 0)
+      );
     }
 
     dotAnimsNecesidades.current.forEach((anim, i) => {
@@ -254,12 +387,7 @@ export default function PerfilScreen() {
         useNativeDriver: false,
       }).start();
     });
-  }, [necesidadesIndex]);
-
-
-
-
-
+  }, [necesidadesIndex, carruselData]);
 
   const openInfo = () => {
     setInfoVisible(true);
@@ -274,17 +402,12 @@ export default function PerfilScreen() {
   const closeEmergencia = () => {
     Animated.timing(panelAnim, { toValue: 1000, duration: 300, useNativeDriver: true }).start(() =>
       setEmergenciaVisible(false)
-
-
     );
   };
-
 
   const closeInfo = () => {
     Animated.timing(panelAnim, { toValue: 1000, duration: 300, useNativeDriver: true }).start(() =>
       setInfoVisible(false),
-
-
     );
   };
 
@@ -295,25 +418,43 @@ export default function PerfilScreen() {
           inputRange: [0, 1],
           outputRange: [colors.white, colors.verdeOscuro],
         });
-
         return <Animated.View key={i} style={[styles.dot, { backgroundColor }]} />;
       })}
     </View>
   );
 
-
-
-
-
-
   const renderCarouselItem = ({ item }) => (
     <View style={{ width: width - 64 }}>
       <Text style={styles.carouselSectionTitle}>{item.titulo}</Text>
       {item.items.map((subItem, idx) => (
-        <TouchableOpacity key={idx} style={styles.widgetCard} onPress={() => navigation.navigate(item.screen)}>
-          <Text style={styles.itemTitle}>{subItem.titulo}</Text>
-          <Text style={styles.itemSubtitle}>{subItem.descripcion}</Text>
-          {subItem.fecha && <Text style={styles.itemSubtitle}>Fecha: {subItem.fecha}</Text>}
+        <TouchableOpacity 
+          key={idx} 
+          style={[
+            styles.widgetCard,
+            subItem.esPlaceholder && styles.placeholderCard
+          ]} 
+          onPress={() => !subItem.esPlaceholder && navigation.navigate(item.screen)}
+        >
+          <Text style={[
+            styles.itemTitle,
+            subItem.esPlaceholder && styles.placeholderTitle
+          ]}>
+            {subItem.titulo || subItem.tipo || subItem.nombre}
+          </Text>
+          
+          {/* Mostrar fecha solo si no es un placeholder */}
+          {!subItem.esPlaceholder && subItem.fecha && subItem.fecha !== 'Fecha no disponible' && (
+            <Text style={styles.itemSubtitle}>
+              Actualizado: {subItem.fecha}
+            </Text>
+          )}
+          
+          <Text style={[
+            styles.itemSubtitle,
+            subItem.esPlaceholder && styles.placeholderSubtitle
+          ]}>
+            {subItem.descripcion}
+          </Text>
         </TouchableOpacity>
       ))}
     </View>
@@ -330,7 +471,6 @@ export default function PerfilScreen() {
       </View>
     );
   }
-
 
   if (!voluntario) {
     return (
@@ -385,12 +525,10 @@ export default function PerfilScreen() {
 
         </View>
 
-
-
         {/* Historial */}
         <TouchableOpacity style={styles.sectionCard} activeOpacity={0.9} onPress={() => navigation.navigate('Historial')}>
           <Animated.FlatList
-            data={historialData}
+            data={getHistorialData()}
             renderItem={renderCarouselItem}
             keyExtractor={(item, index) => index.toString()}
             horizontal
@@ -403,26 +541,33 @@ export default function PerfilScreen() {
             }}
             scrollEventThrottle={16}
           />
-          {renderDots(historialData.length, dotAnimsHistorial.current)}
+          {renderDots(getHistorialData().length, dotAnimsHistorial.current)}
         </TouchableOpacity>
 
         {/* Necesidades y Capacitaciones */}
-        <TouchableOpacity style={styles.sectionCard} activeOpacity={0.9} onPress={() => navigation.navigate('NecesidadesCapacitaciones')}>
+        <TouchableOpacity 
+          style={styles.sectionCard} 
+          activeOpacity={0.9} 
+          onPress={() => navigation.navigate('NecesidadesCapacitaciones')}
+        >
           <Animated.FlatList
-            data={necesidadesData}
+            data={getNecesidadesData()}
             renderItem={renderCarouselItem}
             keyExtractor={(item, index) => index.toString()}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollXNecesidades } } }], { useNativeDriver: false })}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { x: scrollXNecesidades } }}], 
+              { useNativeDriver: false }
+            )}
             onMomentumScrollEnd={(e) => {
               const newIndex = Math.round(e.nativeEvent.contentOffset.x / (width - 64));
               setNecesidadesIndex(newIndex);
             }}
             scrollEventThrottle={16}
           />
-          {renderDots(necesidadesData.length, dotAnimsNecesidades.current)}
+          {renderDots(getNecesidadesData().length, dotAnimsNecesidades.current)}
         </TouchableOpacity>
       </ScrollView>
 
