@@ -135,7 +135,16 @@ export default function LoginScreen() {
     }
   };
 
+<<<<<<< Updated upstream
   return (
+=======
+
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+    return (
+>>>>>>> Stashed changes
     <ScrollView 
       contentContainerStyle={{ flexGrow: 1 }} 
       keyboardShouldPersistTaps="handled"

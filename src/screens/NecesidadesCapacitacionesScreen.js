@@ -5,8 +5,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
 import styles from '../styles/necesidades_capacitacionesStyles';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
-import { getLoggedEmail } from '../services/authService';
-import { getVoluntarioByEmail } from '../services/voluntarioService';
+import { getLoggedCi } from '../services/authService';
+import { getVoluntarioByCi } from '../services/voluntarioService';
 import { obtenerReportePorVoluntarioId } from '../services/queriesSQL';
 
 export default function NecesidadesCapacitacionesScreen() {
@@ -35,11 +35,18 @@ export default function NecesidadesCapacitacionesScreen() {
 
   const [items, setItems] = useState([]);
 
+<<<<<<< Updated upstream
   useEffect(() => {
     const fetchData = async () => {
       try {
         const email = await getLoggedEmail(); 
         const voluntario = await getVoluntarioByEmail(email);
+=======
+  const fetchData = async () => {
+    try {
+      const ci = await getLoggedCi(); 
+      const voluntario = await getVoluntarioByCi(ci);
+>>>>>>> Stashed changes
 
         console.log("Usuario matcheado:", voluntario);
 
