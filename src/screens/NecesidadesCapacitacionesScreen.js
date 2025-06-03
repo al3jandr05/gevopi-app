@@ -46,6 +46,9 @@ export default function NecesidadesCapacitacionesScreen() {
     try {
       const ci = await getLoggedCi(); 
       const voluntario = await getVoluntarioByCi(ci);
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         console.log("Usuario matcheado:", voluntario);

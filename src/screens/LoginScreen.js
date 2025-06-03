@@ -144,6 +144,9 @@ export default function LoginScreen() {
   };
 
     return (
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     <ScrollView 
       contentContainerStyle={{ flexGrow: 1 }} 

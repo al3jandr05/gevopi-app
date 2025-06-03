@@ -6,6 +6,9 @@ const graphqlApi = axios.create({
 =======
   //baseURL: 'http://10.26.4.122:9090/graphql',
   baseURL: 'http://34.9.138.238:9090/graphql',
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   headers: {
     'Content-Type': 'application/json',

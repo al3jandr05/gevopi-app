@@ -13,7 +13,11 @@
     "@apollo/client": "^3.13.8",
     "@expo/vector-icons": "^14.1.0",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     "@gorhom/bottom-sheet": "^4.6.4",
+=======
+    "@gorhom/bottom-sheet": "^5.1.5",
+>>>>>>> Stashed changes
 =======
     "@gorhom/bottom-sheet": "^5.1.5",
 >>>>>>> Stashed changes
@@ -30,6 +34,9 @@
     "expo": "~53.0.7",
 =======
     "expo": "53.0.9",
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     "expo-linear-gradient": "~14.1.4",
     "expo-location": "~18.1.4",
