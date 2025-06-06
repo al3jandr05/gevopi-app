@@ -11,9 +11,9 @@ export const getVoluntarios = async () => {
     return response.data;
   };
   
-  export const getVoluntarioByEmail = async (email) => {
+  export const getVoluntarioByCi = async (ci) => {
     const voluntarios = await getVoluntarios();
-    return voluntarios.find(v => v.email === email);
+    return voluntarios.find(v => v.ci === ci);
   };
 
 export const getVoluntarioByUsuarioId = async (id) => {

@@ -25,8 +25,8 @@ import { Dropdown } from 'react-native-element-dropdown';
 
 import { getUsuarios } from '../services/usuarioService';
 import { getVoluntarioByUsuarioId } from '../services/voluntarioService';
-import { getLoggedEmail, logout } from '../services/authService';
-import { getVoluntarioByEmail } from '../services/voluntarioService';
+import { getLoggedCi, logout } from '../services/authService';
+import { getVoluntarioByCi } from '../services/voluntarioService';
 import { crearSolicitudAyuda, crearHistorialUbicacion } from '../services/mutationsNOSQL';
 import { obtenerReportePorVoluntarioId } from '../services/queriesSQL';
 
@@ -165,9 +165,9 @@ export default function PerfilScreen() {
   useEffect(() => {
     const fetchVoluntario = async () => {
       try {
-        const email = getLoggedEmail();
+        const email = getLoggedCi();
         console.log(email);
-        const voluntarioData = await getVoluntarioByEmail(email);
+        const voluntarioData = await getVoluntarioByCi(email);
 
         if (!voluntarioData) {
           console.warn('Voluntario no encontrado para:', email);
@@ -206,8 +206,8 @@ export default function PerfilScreen() {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') return;
 
-      const email = getLoggedEmail();
-      const voluntario = await getVoluntarioByEmail(email);
+      const email = getLoggedCi();
+      const voluntario = await getVoluntarioByCi(email);
       if (!voluntario) return;
 
       intervalId = setInterval(async () => {

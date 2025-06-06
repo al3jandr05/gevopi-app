@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import colors from '../themes/colors';
 import { useNavigation } from '@react-navigation/native';
 import styles from '../styles/loginStyles';
-import { login, getLoggedEmail } from '../services/authService';
+import { login, getLoggedCi } from '../services/authService';
 
 const { height } = Dimensions.get('window');
 
@@ -91,7 +91,7 @@ export default function LoginScreen() {
       const token = await login(username, password);
       console.log("TOKEN:", token);
 
-      const emailGuardado = getLoggedEmail();
+      const emailGuardado = getLoggedCi();
       console.log("EMAIL GUARDADO:", emailGuardado);
 
       Animated.parallel([
@@ -135,19 +135,11 @@ export default function LoginScreen() {
     }
   };
 
-<<<<<<< Updated upstream
-  return (
-=======
-
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
 
-    return (
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+  return (
     <ScrollView 
       contentContainerStyle={{ flexGrow: 1 }} 
       keyboardShouldPersistTaps="handled"

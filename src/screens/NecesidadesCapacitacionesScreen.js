@@ -35,54 +35,44 @@ export default function NecesidadesCapacitacionesScreen() {
 
   const [items, setItems] = useState([]);
 
-<<<<<<< Updated upstream
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const email = await getLoggedEmail(); 
-        const voluntario = await getVoluntarioByEmail(email);
-=======
   const fetchData = async () => {
     try {
       const ci = await getLoggedCi(); 
       const voluntario = await getVoluntarioByCi(ci);
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
-        console.log("Usuario matcheado:", voluntario);
+      console.log("Usuario matcheado:", voluntario);
 
-        if (!voluntario || !voluntario.id) return;
+      if (!voluntario || !voluntario.id) return;
   
-        const reportes = await obtenerReportePorVoluntarioId(voluntario.id.toString());
+      const reportes = await obtenerReportePorVoluntarioId(voluntario.id.toString());
   
-        if (reportes?.length > 0) {
-          const masReciente = [...reportes].sort(
-            (a, b) => new Date(b.fechaGenerado) - new Date(a.fechaGenerado)
-          )[0];
-        
-          const necesidades = masReciente.necesidades?.map((n) => ({
-            tipo: "necesidad",
-            titulo: n.tipo,
-            descripcion: n.descripcion,
-            fecha: masReciente.fechaGenerado,
-          })) || [];
-        
-          const capacitaciones = masReciente.capacitaciones?.map((c) => ({
-            tipo: "capacitacion",
-            titulo: c.nombre,
-            descripcion: c.descripcion,
-            fecha: masReciente.fechaGenerado,
-          })) || [];
-        
-          setItems([...necesidades, ...capacitaciones]);
-        }
-      } catch (error) {
-        console.error("Error cargando necesidades/capacitaciones:", error);
+      if (reportes?.length > 0) {
+        const masReciente = [...reportes].sort(
+          (a, b) => new Date(b.fechaGenerado) - new Date(a.fechaGenerado)
+        )[0];
+      
+        const necesidades = masReciente.necesidades?.map((n) => ({
+          tipo: "necesidad",
+          titulo: n.tipo,
+          descripcion: n.descripcion,
+          fecha: masReciente.fechaGenerado,
+        })) || [];
+      
+        const capacitaciones = masReciente.capacitaciones?.map((c) => ({
+          tipo: "capacitacion",
+          titulo: c.nombre,
+          descripcion: c.descripcion,
+          fecha: masReciente.fechaGenerado,
+        })) || [];
+      
+        setItems([...necesidades, ...capacitaciones]);
       }
-    };
-  
+    } catch (error) {
+      console.error("Error cargando necesidades/capacitaciones:", error);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, []);
 

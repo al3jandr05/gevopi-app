@@ -7,8 +7,8 @@ import styles from '../styles/evaluacionesStyles';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 
 import { useQuery } from '@apollo/client';
-import { getLoggedEmail } from '../services/authService';
-import { getVoluntarioByEmail } from '../services/voluntarioService';
+import { getLoggedCi } from '../services/authService';
+import { getVoluntarioByCi } from '../services/voluntarioService';
 import { GET_EVALUACIONES } from '../services/queriesSQL';
 
 export default function EvaluacionesScreen() {
@@ -49,8 +49,8 @@ export default function EvaluacionesScreen() {
   useEffect(() => {
     const fetchVoluntarioId = async () => {
       try {
-        const email = await getLoggedEmail();
-        const voluntario = await getVoluntarioByEmail(email);
+        const ci = await getLoggedCi();
+        const voluntario = await getVoluntarioByCi(ci);
         if (voluntario && voluntario.id) {
           setVoluntarioId(parseInt(voluntario.id));
         }

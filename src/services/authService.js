@@ -1,23 +1,23 @@
 import api from './api';
 
 let authToken = null;
-let loggedEmail = null;
+let loggedCi = null;
 
-export const login = async (email, contrasena) => {
+export const login = async (ci, contrasena) => {
   const response = await api.post('/usuarios/login', {
-    email,
+    ci,
     contrasena,
   });
   authToken = response.data.access_token;
-  loggedEmail = email;
+  loggedCi = ci;
 
   return authToken;
 };
 
 export const getToken = () => authToken;
-export const getLoggedEmail = () => loggedEmail;
+export const getLoggedCi = () => loggedCi;
 
 export const logout = () => {
   authToken = null;
-  loggedEmail = null;
+  loggedCi = null;
 };

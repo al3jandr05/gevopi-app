@@ -5,8 +5,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
 import styles from '../styles/historialStyles';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
-import { getLoggedEmail } from '../services/authService';
-import { getVoluntarioByEmail } from '../services/voluntarioService';
+import { getLoggedCi } from '../services/authService';
+import { getVoluntarioByCi } from '../services/voluntarioService';
 import { obtenerReportePorVoluntarioId } from '../services/queriesSQL';
 
 export default function HistorialScreen() {
@@ -75,8 +75,8 @@ export default function HistorialScreen() {
   useEffect(() => {
     const fetchHistorial = async () => {
       try {
-        const email = await getLoggedEmail();
-        const voluntario = await getVoluntarioByEmail(email);
+        const ci = await getLoggedCi();
+        const voluntario = await getVoluntarioByCi(ci);
         if (!voluntario || !voluntario.id) return;
   
         const reportes = await obtenerReportePorVoluntarioId(voluntario.id.toString());
