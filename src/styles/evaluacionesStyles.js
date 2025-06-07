@@ -22,7 +22,7 @@ export default StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: colors.verdeOscuro,
+    color: colors.naranjaFuerte,
     marginLeft: 12,
   },
   filtersRow: {
@@ -35,29 +35,29 @@ export default StyleSheet.create({
     borderRadius: 12,
     marginRight: 12,
     borderWidth: 1,
-    borderColor: colors.verdeOscuro,
+    borderColor: colors.naranjaFuerte,
   },
   reiniciarButton: {
-    backgroundColor: colors.red,
+    backgroundColor: colors.rojo,
     padding: 12,
     borderRadius: 12,
     marginLeft: 8,
   },
   input: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.blanco,
     paddingHorizontal: 14,
     borderRadius: 12,
-    color: colors.black,
+    color: colors.negro,
     height: 40,
     paddingVertical: 10,
-    borderColor: colors.verdeOscuro,
+    borderColor: colors.naranjaFuerte,
     borderWidth: 1,
   },
   buscador: {
-    backgroundColor: colors.verdeHoverCard,
+    backgroundColor: colors.card,
   },
   card: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.blanco,
     borderRadius: 10,
     padding: 15,
     width: '98%',
@@ -67,17 +67,17 @@ export default StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 6,
-    borderLeftColor: colors.verdeCritico,
+    borderLeftColor: colors.amarillo,
   },
   cardTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.verdeOscuro,
+    color: colors.amarillo,
     marginBottom: 8,
   },
   cardSubtitle: {
     fontSize: 14,
-    color: colors.black,
+    color: colors.negro,
   },
   cardFecha: {
     fontSize: 13,
@@ -85,7 +85,7 @@ export default StyleSheet.create({
     fontWeight: 'bold',
   },
   verButton: {
-    backgroundColor: colors.verdeOscuro,
+    backgroundColor: colors.amarillo,
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -93,7 +93,7 @@ export default StyleSheet.create({
     marginTop: 10,
   },
   verButtonText: {
-    color: colors.white,
+    color: colors.blanco,
     fontWeight: 'bold',
   },
   modalOverlay: {
@@ -103,7 +103,7 @@ export default StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.card2,
     padding: 24,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
@@ -111,13 +111,13 @@ export default StyleSheet.create({
   modalTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: colors.verdeOscuro,
+    color: colors.naranjaFuerte,
     marginBottom: 16,
   },
   filterLabel: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: colors.black,
+    color: colors.negro,
     marginBottom: 8,
   },
   chipsRow: {
@@ -127,14 +127,14 @@ export default StyleSheet.create({
   choiceChip: {
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: colors.inputBackground,
+    backgroundColor: colors.card,
     borderRadius: 20,
     marginRight: 10,
     borderWidth: 1,
-    borderColor: colors.verdeOscuro,
+    borderColor: colors.naranjaFuerte,
   },
   choiceChipSelected: {
-    backgroundColor: colors.verdeOscuro,
+    backgroundColor: colors.naranjaFuerte,
   },
   datePicker: {
     padding: 14,
@@ -152,14 +152,14 @@ export default StyleSheet.create({
     alignItems: 'center'
   },
   applyButton: {
-    backgroundColor: colors.verdeOscuro,
+    backgroundColor: colors.naranjaFuerte,
     padding: 14,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 10,
   },
   applyButtonText: {
-    color: colors.white,
+    color: colors.blanco,
     fontWeight: 'bold',
   },
 });

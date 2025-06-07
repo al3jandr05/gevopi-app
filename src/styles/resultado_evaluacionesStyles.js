@@ -24,7 +24,7 @@ export default StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: '600',
-    color: colors.verdeOscuro,
+    color: colors.amarillo,
     textAlign: 'center',
     flex: 1,
   },
@@ -35,11 +35,11 @@ export default StyleSheet.create({
   
   // Tarjeta de resumen
   summaryCard: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.card,
     borderRadius: 12,
     padding: 20,
     marginBottom: 25,
-    shadowColor: colors.shadow,
+    shadowColor: colors.sombraSuave,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
@@ -54,7 +54,7 @@ export default StyleSheet.create({
   summaryTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.verdeOscuro,
+    color: colors.naranjaFuerte,
     flex: 1,
   },
   evaluationTypeBadge: {
@@ -64,19 +64,19 @@ export default StyleSheet.create({
     marginLeft: 10,
   },
   physicalBadge: {
-    backgroundColor: colors.verdeClaro,
+    backgroundColor: colors.naranjaSuave,
   },
   emotionalBadge: {
-    backgroundColor: colors.azulClaro,
+    backgroundColor: colors.naranjaSuave,
   },
   evaluationTypeText: {
     fontSize: 12,
     fontWeight: '600',
-    color: colors.white,
+    color: colors.blanco,
   },
   summaryDetails: {
     borderTopWidth: 1,
-    borderTopColor: colors.bordeSuave,
+    borderTopColor: colors.naranjaSuave,
     paddingTop: 15,
   },
   detailItem: {
@@ -92,10 +92,10 @@ export default StyleSheet.create({
   
   // Sección de informe
   reportSection: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.card,
     borderRadius: 12,
     padding: 20,
-    shadowColor: colors.shadow,
+    shadowColor: colors.sombraSuave,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
@@ -106,13 +106,13 @@ export default StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
     borderBottomWidth: 1,
-    borderBottomColor: colors.bordeSuave,
+    borderBottomColor: colors.naranjaFuerte,
     paddingBottom: 15,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.verdeOscuro,
+    color: colors.naranjaFuerte,
     marginLeft: 10,
   },
   
@@ -128,11 +128,11 @@ export default StyleSheet.create({
   subSectionTitle: {
     fontSize: 17,
     fontWeight: '600',
-    color: colors.verdeCritico,
+    color: colors.amarillo,
     marginRight: 8,
   },
   contentBox: {
-    backgroundColor: colors.fondoClaro,
+    backgroundColor: colors.card,
     borderRadius: 8,
     padding: 15,
   },
@@ -141,13 +141,13 @@ export default StyleSheet.create({
     marginBottom: 8,
   },
   bullet: {
-    color: colors.verdeOscuro,
+    color: colors.amarillo,
     fontWeight: 'bold',
     marginRight: 8,
   },
   listText: {
     flex: 1,
-    color: colors.texto,
+    color: colors.negro,
     fontSize: 15,
     lineHeight: 22,
   },
@@ -157,7 +157,6 @@ export default StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 15,
-    backgroundColor: colors.fondoClaro,
     borderRadius: 8,
     marginTop: 10,
   },
@@ -167,18 +166,5 @@ export default StyleSheet.create({
     fontSize: 15,
   },
   
-  // Botón de acción
-  actionButton: {
-    backgroundColor: colors.verdeOscuro,
-    borderRadius: 8,
-    padding: 16,
-    marginTop: 25,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  actionButtonText: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  
 });

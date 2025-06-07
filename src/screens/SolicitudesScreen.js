@@ -127,11 +127,11 @@ export default function SolicitudesScreen() {
         {/* Fecha y Estado */}
         <View style={styles.infoRow}>
           <View style={styles.infoItem}>
-            <FontAwesome5 name="calendar-alt" size={14} color={colors.verdeOscuro}/>
+            <FontAwesome5 name="calendar-alt" size={14} color={colors.azulOscuro}/>
             <Text style={styles.cardFecha}>{new Date(item.fecha).toLocaleDateString()}</Text>
           </View>
           <View style={styles.infoItem}>
-            <FontAwesome5 name="check-circle" size={14} color={colors.verdeOscuro}/>
+            <FontAwesome5 name="check-circle" size={14} color={colors.naranjaFuerte}/>
             <Text style={styles.cardState}>{item.estado}</Text>
           </View>
         </View>
@@ -150,11 +150,11 @@ export default function SolicitudesScreen() {
             zoomEnabled={false}
           >
             <Marker coordinate={{ latitude: parseFloat(item.latitud), longitude: parseFloat(item.longitud) }}>
-              <FontAwesome5 name="map-marker-alt" size={24} color={colors.verdeOscuro} />
+              <FontAwesome5 name="map-marker-alt" size={24} color={colors.naranjaFuerte} />
             </Marker>
           </MapView>
           <View style={styles.mapOverlay}>
-            <FontAwesome5 name="map-marked-alt" size={14} color={colors.gray} />
+            <FontAwesome5 name="map-marked-alt" size={14} color={colors.amarillo} />
             <Text style={styles.locationText}>Ver ubicación</Text>
           </View>
         </View>
@@ -169,14 +169,14 @@ export default function SolicitudesScreen() {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Ionicons name="arrow-back" size={24} color={colors.verdeOscuro} />
+          <Ionicons name="arrow-back" size={24} color={colors.naranjaFuerte} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Solicitudes</Text>
       </View>
 
       <View style={styles.filtersRow}>
         <TouchableOpacity onPress={abrirPanel} style={[styles.filtroButton]}>
-          <FontAwesome5 name="filter" size={18} color={colors.verdeOscuro} />
+          <FontAwesome5 name="filter" size={18} color={colors.naranjaFuerte} />
         </TouchableOpacity>
 
         <Animated.View style={{ flex: searchWidthAnim }}>
@@ -190,7 +190,7 @@ export default function SolicitudesScreen() {
 
         <Animated.View style={{ opacity: reiniciarOpacity }}>
           <TouchableOpacity onPress={reiniciarFiltros} style={styles.reiniciarButton}>
-            <Ionicons name="close" size={20} color={colors.white} />
+            <Ionicons name="close" size={20} color={colors.blanco} />
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -256,7 +256,7 @@ export default function SolicitudesScreen() {
 
       <Modal visible={pickerVisible} transparent animationType="fade">
         <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }} onPress={() => setPickerVisible(false)} />
-        <View style={{ backgroundColor: colors.white, padding: 16, borderRadius: 12, margin: 20 }}>
+        <View style={{ backgroundColor: colors.blanco, padding: 8, borderRadius: 12 }}>
           <DateTimePicker
             value={tempFiltros.fecha || new Date()}
             mode="date"
@@ -267,7 +267,7 @@ export default function SolicitudesScreen() {
               }
               setPickerVisible(false);
             }}
-            textColor={Platform.OS === 'ios' ? colors.verdeOscuro : undefined}
+            textColor={Platform.OS === 'ios' ? colors.naranjaFuerte : undefined}
             themeVariant={Platform.OS === 'ios' ? "light" : undefined}
           />
         </View>

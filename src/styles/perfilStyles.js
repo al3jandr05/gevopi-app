@@ -6,7 +6,7 @@ const { width, height } = Dimensions.get('window');
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.fondo,
   },
   perfilContainer: {
     alignItems: 'center',
@@ -18,22 +18,12 @@ export default StyleSheet.create({
     position: 'relative',
     marginBottom: 15,
   },
-  avatarPlaceholder: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: colors.verdeOscuro,
-    borderWidth: 3,
-    borderColor: colors.verdeOscuro,
-  },
-
-
   greenContainer: {
     position: 'absolute',
     top: 0,
     width: '100%',
     height: height * 0.55,
-    backgroundColor: colors.verdeOscuro,
+    backgroundColor: colors.amarillo,
     borderBottomLeftRadius: 50,
     borderBottomRightRadius: 50,
     zIndex: -1,
@@ -46,30 +36,13 @@ export default StyleSheet.create({
     bottom: 5,
     right: 5,
     borderWidth: 2,
-    borderColor: colors.white,
+    borderColor: colors.blanco,
   },
   name: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: colors.white,
+    color: colors.blanco,
     marginBottom: 5,
-  },
-  stressText: {
-    color: colors.verdeSuave,
-    fontSize: 16,
-    marginBottom: 5,
-  },
-  stressBar: {
-    backgroundColor: '#eee',
-    width: '80%',
-    height: 12,
-    borderRadius: 6,
-    marginBottom: 15,
-    overflow: 'hidden',
-  },
-  stressFill: {
-    height: '100%',
-    borderRadius: 6,
   },
   buttonsRow: {
     flexDirection: 'row',
@@ -78,11 +51,11 @@ export default StyleSheet.create({
     marginTop: 10,
   },
   circleButton: {
-    backgroundColor: colors.fondo,
     width: 50,
     height: 50,
     borderRadius: 25,
-    color: colors.black,
+    color: colors.negro,
+    backgroundColor: colors.fondo,
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: 15,
@@ -95,7 +68,7 @@ export default StyleSheet.create({
   },
 
   emergenciaButton: {
-    backgroundColor: colors.red,
+    backgroundColor: colors.naranjaFuerte,
     width: 50,
     height: 50,
     borderRadius: 25,
@@ -105,7 +78,7 @@ export default StyleSheet.create({
     elevation: 3,
   },
   sectionCard: {
-    backgroundColor: colors.verdeSuave,
+    backgroundColor: colors.card,
     margin: 16,
     padding: 16,
     borderRadius: 12,
@@ -118,11 +91,11 @@ export default StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.verdeOscuro,
+    color: colors.amarillo,
     marginBottom: 15,
   },
   widgetCard: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.blanco,
     borderRadius: 10,
     padding: 15,
     width: '95%',
@@ -132,12 +105,12 @@ export default StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 6,
-    borderLeftColor: colors.verdeCritico,
+    borderLeftColor: colors.amarillo,
   },
   itemTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.verdeOscuro,
+    color: colors.amarillo,
     marginBottom: 5,
   },
   itemSubtitle: {
@@ -156,7 +129,7 @@ export default StyleSheet.create({
     borderRadius: 5,
     marginHorizontal: 4,
     borderWidth: 1,
-    borderColor: colors.verdeOscuro,
+    borderColor: colors.amarillo,
   },
 
   modalBackdrop: {
@@ -168,7 +141,8 @@ export default StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: colors.white,
+  
+    backgroundColor: colors.blanco,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 25,
@@ -182,7 +156,7 @@ export default StyleSheet.create({
   modalTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: colors.verdeOscuro,
+    color: colors.amarillo,
     marginBottom: 20,
     textAlign: 'left',
   },
@@ -204,12 +178,12 @@ export default StyleSheet.create({
   carouselSectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.verdeOscuro,
+    color: colors.naranjaFuerte,
     marginBottom: 10,
   },
   container: {
     flex: 1,
-    backgroundColor: colors.verdeOscuro,
+    backgroundColor: colors.amarillo,
   },
   avatarImage: {
     width: 120,
@@ -221,50 +195,57 @@ export default StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: colors.fondo,
+    backgroundColor: colors.blanco,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: colors.blanco,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
 
   avatarInitial: {
     fontSize: 48,
-    color: colors.verdeOscuro,
+    color: colors.amarillo,
     fontWeight: 'bold',
   },
 
 
   modalSection: {
     marginBottom: 18,
+    
   },
   modalLabel: {
     fontWeight: 'bold',
     marginBottom: 6,
-    color: colors.verdeOscuro,
+    color: colors.naranjaFuerte,
     fontSize: 15,
+    
   },
 
   descripcionInput: {
     marginBottom: 6,
     borderColor: colors.gray,
     borderWidth: 1,
-    color: colors.verdeOscuro,
+    color: colors.amarillo,
     fontSize: 15,
     height: 50,
-    backgroundColor: colors.white,
+    backgroundColor: colors.blanco,
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
 
   enviarButton: {
-    backgroundColor: colors.verdeOscuro,
+    backgroundColor: colors.amarillo,
     padding: 14,
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 10,
   },
   enviarButtonText: {
-    color: colors.white,
+    color: colors.blanco,
     fontWeight: 'bold',
     fontSize: 16,
   },
@@ -328,12 +309,12 @@ export default StyleSheet.create({
     marginTop: 16,
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.verdeOscuro,
+    color: colors.amarillo,
   },
 
   loadingSubtext: {
     fontSize: 14,
-    color: colors.verdeOscuro,
+    color: colors.amarillo,
     marginTop: 6,
   },
 
@@ -342,7 +323,7 @@ export default StyleSheet.create({
     paddingVertical: 10,
   },
   cardContainer: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.blanco,
     borderRadius: 15,
     padding: 16,
     marginVertical: 8,
@@ -356,7 +337,7 @@ export default StyleSheet.create({
     elevation: 5,
     width: '98%',
     borderLeftWidth: 4,
-    borderLeftColor: colors.verdeOscuro,
+    borderLeftColor: colors.amarillo,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -367,12 +348,12 @@ export default StyleSheet.create({
   cardTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.verdeOscuro,
+    color: colors.amarillo,
     flex: 1,
   },
   cardDate: {
     fontSize: 12,
-    color: colors.gray,
+    color: colors.gris,
     marginLeft: 4,
   },
   dateContainer: {
@@ -386,7 +367,7 @@ export default StyleSheet.create({
     lineHeight: 20,
   },
   emptyStateContainer: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.blanco,
     width: '98%',
     borderRadius: 15,
     padding: 20,
@@ -405,14 +386,14 @@ export default StyleSheet.create({
   emptyStateText: {
     marginTop: 10,
     fontSize: 14,
-    color: colors.gray,
+    color: colors.gris,
     textAlign: 'center',
   },
   logoutButton: {
     position: 'absolute',
     top: 60,
     right: 20,
-    backgroundColor: colors.verdeOscuro,
+    backgroundColor: colors.fondo,
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -424,5 +405,20 @@ export default StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
+  },
+  logoutButton2: {
+    flexDirection: 'row',
+    alignContent: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.amarillo,
+    borderRadius: 20,
+    marginTop: 10,
+    padding: 16,
+  },
+  logoutText: {
+    color: colors.blanco,
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginRight: 8,
   },
 });

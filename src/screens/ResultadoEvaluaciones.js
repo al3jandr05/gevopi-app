@@ -27,7 +27,7 @@ const ResultadoEvaluacionesScreen = () => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Ionicons name="arrow-back" size={24} color={colors.verdeOscuro} />
+          <Ionicons name="arrow-back" size={24} color={colors.amarillo} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Resultados de Evaluación</Text>
         
@@ -50,14 +50,14 @@ const ResultadoEvaluacionesScreen = () => {
           
           <View style={styles.summaryDetails}>
             <View style={styles.detailItem}>
-              <Ionicons name="calendar" size={16} color={colors.verdeOscuro} />
+              <Ionicons name="calendar" size={16} color={colors.naranjaFuerte} />
               <Text style={styles.detailText}>
                 Realizada: {evaluacion.fechaRealizada || "-"}
               </Text>
             </View>
             
             <View style={styles.detailItem}>
-              <Ionicons name="document-text" size={16} color={colors.verdeOscuro} />
+              <Ionicons name="document-text" size={16} color={colors.naranjaFuerte} />
               <Text style={styles.detailText}>
                 Resultado: {evaluacion.fechaResultado || "-"}
               </Text>
@@ -68,7 +68,7 @@ const ResultadoEvaluacionesScreen = () => {
         {/* Sección de informe */}
         <View style={styles.reportSection}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="analytics" size={22} color={colors.verdeOscuro} />
+            <Ionicons name="analytics" size={22} color={colors.naranjaFuerte} />
             <Text style={styles.sectionTitle}>Informe Detallado</Text>
           </View>
 
@@ -77,7 +77,7 @@ const ResultadoEvaluacionesScreen = () => {
             <View style={styles.subSection}>
               <View style={styles.subSectionHeader}>
                 <Text style={styles.subSectionTitle}>Observaciones Clínicas</Text>
-                <Ionicons name="eye" size={18} color={colors.verdeCritico} />
+                <Ionicons name="eye" size={18} color={colors.amarillo} />
               </View>
               <View style={styles.contentBox}>
                 {reporte.observaciones.split('\n').map((obs, i) => (
@@ -95,7 +95,7 @@ const ResultadoEvaluacionesScreen = () => {
             <View style={styles.subSection}>
               <View style={styles.subSectionHeader}>
                 <Text style={styles.subSectionTitle}>Recomendaciones</Text>
-                <Ionicons name="medkit" size={18} color={colors.verdeCritico} />
+                <Ionicons name="medkit" size={18} color={colors.amarillo} />
               </View>
               <View style={styles.contentBox}>
                 {reporte.recomendaciones.split('\n').map((rec, i) => (

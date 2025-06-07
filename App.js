@@ -15,6 +15,8 @@ import NecesidadesCapacitacionesScreen from './src/screens/NecesidadesCapacitaci
 import SolicitudesScreen from './src/screens/SolicitudesScreen';
 import DetalleSolicitudScreen from './src/screens/DetalleSolicitudScreen';
 import ResultadoEvaluacionesScreen from './src/screens/ResultadoEvaluaciones';
+import CursosScreen from './src/screens/CursosScreen';
+import DetalleCursosScreen from './src/screens/DetalleCursosScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -32,7 +34,8 @@ export default function App() {
             <Stack.Screen name="ResultadoEvaluaciones" component={ResultadoEvaluacionesScreen} />
             <Stack.Screen name="Solicitudes" component={SolicitudesScreen} options={{ title: 'Solicitudes de Ayuda' }} />
             <Stack.Screen name="DetalleSolicitud" component={DetalleSolicitudScreen} options={{ title: 'Detalle de la Solicitud de Ayuda' }} />
-
+            <Stack.Screen name="Cursos" component={CursosScreen}  />
+            <Stack.Screen name="DetalleCursos" component={DetalleCursosScreen}/>
           </Stack.Navigator>
           <StatusBar style="auto" />
         </NavigationContainer>

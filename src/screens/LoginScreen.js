@@ -34,7 +34,7 @@ export default function LoginScreen() {
   const titleColor = useRef(new Animated.Value(0)).current;
   const interpolatedColor = titleColor.interpolate({
     inputRange: [0, 1],
-    outputRange: [colors.verdeOscuro, colors.white],
+    outputRange: [colors.amarillo, colors.blanco],
   });
 
   const navigation = useNavigation();
@@ -214,7 +214,7 @@ export default function LoginScreen() {
                 <Ionicons
                   name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                   size={20}
-                  color={colors.verdeOscuro}
+                  color={colors.naranjaFuerte}
                 />
               </TouchableOpacity>
             </View>

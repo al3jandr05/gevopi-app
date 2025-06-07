@@ -155,14 +155,14 @@ export default function EvaluacionesScreen() {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Ionicons name="arrow-back" size={24} color={colors.verdeOscuro} />
+          <Ionicons name="arrow-back" size={24} color={colors.naranjaFuerte} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Evaluaciones</Text>
       </View>
 
       <View style={styles.filtersRow}>
-        <TouchableOpacity onPress={abrirPanel} style={[styles.filtroButton, { backgroundColor: hayFiltrosActivos ? colors.verdeOscuro : colors.fondo }]}>
-          <FontAwesome5 name="filter" size={18} color={hayFiltrosActivos ? colors.fondo : colors.verdeOscuro} />
+        <TouchableOpacity onPress={abrirPanel} style={[styles.filtroButton, { backgroundColor: hayFiltrosActivos ? colors.naranjaFuerte : colors.fondo }]}>
+          <FontAwesome5 name="filter" size={18} color={hayFiltrosActivos ? colors.fondo : colors.naranjaFuerte} />
         </TouchableOpacity>
 
         <Animated.View style={{ flex: searchWidthAnim }}>
@@ -176,7 +176,7 @@ export default function EvaluacionesScreen() {
 
         <Animated.View style={{ opacity: reiniciarOpacity }}>
           <TouchableOpacity onPress={reiniciarFiltros} style={styles.reiniciarButton}>
-            <Ionicons name="close" size={20} color={colors.white} />
+            <Ionicons name="close" size={20} color={colors.blanco} />
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -201,7 +201,7 @@ export default function EvaluacionesScreen() {
         }}
         ListEmptyComponent={() => (
           <View style={{ padding: 30, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ color: colors.verdeOscuro, textAlign: 'center', fontSize: 16 }}>
+            <Text style={{ color: colors.naranjaFuerte, textAlign: 'center', fontSize: 16 }}>
               No se encontraron resultados.
             </Text>
           </View>
@@ -226,7 +226,7 @@ export default function EvaluacionesScreen() {
                     tipo: filtrosTemp.tipo === tipo ? null : tipo 
                   }))}
                 >
-                  <Text style={{ color: filtrosTemp.tipo === tipo ? colors.white : colors.black }}>
+                  <Text style={{ color: filtrosTemp.tipo === tipo ? colors.blanco : colors.negro }}>
                     {tipo}
                   </Text>
                 </Pressable>
@@ -244,7 +244,7 @@ export default function EvaluacionesScreen() {
                     estado: filtrosTemp.estado === tipo ? null : tipo 
                   }))}
                 >
-                  <Text style={{ color: filtrosTemp.estado === tipo ? colors.white : colors.black }}>
+                  <Text style={{ color: filtrosTemp.estado === tipo ? colors.blanco : colors.negro }}>
                     {tipo}
                   </Text>
                 </Pressable>
@@ -254,8 +254,8 @@ export default function EvaluacionesScreen() {
             {filtrosTemp.estado && (
               <>
                 <TouchableOpacity onPress={() => setMostrarRangoFechas(!mostrarRangoFechas)} style={styles.rangoFechaToggle}>
-                  <Text style={{ color: colors.verdeOscuro, fontWeight: 'bold' }}>Rango de Fechas</Text>
-                  <Ionicons name={mostrarRangoFechas ? 'chevron-up' : 'chevron-down'} size={20} color={colors.verdeOscuro} />
+                  <Text style={{ color: colors.naranjaFuerte, fontWeight: 'bold' }}>Rango de Fechas</Text>
+                  <Ionicons name={mostrarRangoFechas ? 'chevron-up' : 'chevron-down'} size={20} color={colors.naranjaFuerte} />
                 </TouchableOpacity>
 
                 {mostrarRangoFechas && (
@@ -283,13 +283,13 @@ export default function EvaluacionesScreen() {
 
       <Modal visible={pickerType !== null} transparent animationType="fade">
         <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }} onPress={() => setPickerType(null)} />
-        <View style={{ backgroundColor: colors.white, padding: 16 }}>
+        <View style={{ backgroundColor: colors.blanco, padding: 16 }}>
           <DateTimePicker
             value={pickerValue || new Date()}
             mode="date"
             display={Platform.OS === 'ios' ? 'inline' : 'calendar'}
             onChange={onDateChange}
-            textColor={Platform.OS === 'ios' ? colors.verdeOscuro : undefined}
+            textColor={Platform.OS === 'ios' ? colors.naranjaFuerte : undefined}
             themeVariant={Platform.OS === 'ios' ? 'light' : undefined}
           />
         </View>

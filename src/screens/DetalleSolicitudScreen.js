@@ -86,7 +86,7 @@ export default function DetalleSolicitudScreen() {
                     style={[styles.backButton, { position: 'absolute', top: '8%', left: 20, zIndex: 800 }]}
                     onPress={() => navigation.goBack()}
                 >
-                    <MaterialIcons name="arrow-back" size={24} color={colors.verdeOscuro} />
+                    <MaterialIcons name="arrow-back" size={24} color={colors.amarillo} />
                 </TouchableOpacity>
 
                 <BottomSheet
@@ -96,10 +96,10 @@ export default function DetalleSolicitudScreen() {
                     onChange={handleSheetChanges}
                     enablePanDownToClose={false}
                     backgroundStyle={{
-                        backgroundColor: colors.white,
+                        backgroundColor: colors.blanco,
                     }}
                     handleIndicatorStyle={{
-                        backgroundColor: colors.verdeOscuro,
+                        backgroundColor: colors.amarillo,
                     }}
                 >
                     <BottomSheetView style={{ flex: 1 }}>
@@ -112,19 +112,19 @@ export default function DetalleSolicitudScreen() {
                                 <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
                                     <View>
                                         <View style={styles.infoRow}>
-                                            <FontAwesome5 name="file-alt" size={18} color={colors.verdeOscuro} />
+                                            <FontAwesome5 name="file-alt" size={18} color={colors.amarillo} />
                                             <Text style={styles.infoText}>{solicitud.descripcion}</Text>
                                         </View>
 
                                         <View style={styles.infoRow}>
-                                            <FontAwesome5 name="calendar" size={18} color={colors.verdeOscuro} />
+                                            <FontAwesome5 name="calendar" size={18} color={colors.amarillo} />
                                             <Text style={styles.infoText}>
                                                 {new Date(solicitud.fecha).toLocaleString()}
                                             </Text>
                                         </View>
 
                                         <View style={styles.infoRow}>
-                                            <FontAwesome5 name="heartbeat" size={18} color={colors.verdeOscuro} />
+                                            <FontAwesome5 name="heartbeat" size={18} color={colors.amarillo} />
                                             <Text style={styles.infoText}>Tipo: {solicitud.tipo}</Text>
                                         </View>
 
@@ -132,7 +132,7 @@ export default function DetalleSolicitudScreen() {
                                             <FontAwesome5
                                                 name="exclamation-triangle"
                                                 size={18}
-                                                color={colors.verdeOscuro}
+                                                color={colors.amarillo}
                                             />
                                             <Text style={styles.infoText}>Nivel: {solicitud.nivelEmergencia}</Text>
                                         </View>
@@ -141,13 +141,13 @@ export default function DetalleSolicitudScreen() {
                                             onPress={compartirConWhatsApp}
                                             style={{
                                                 margin: 16,
-                                                backgroundColor: colors.verdeOscuro,
+                                                backgroundColor: colors.amarillo,
                                                 padding: 12,
                                                 borderRadius: 8,
                                                 alignItems: 'center',
                                             }}
                                         >
-                                            <Text style={{ color: 'white', fontWeight: 'bold' }}>Compartir por WhatsApp</Text>
+                                            <Text style={{ color: 'blanco', fontWeight: 'bold' }}>Compartir por WhatsApp</Text>
                                         </TouchableOpacity>
                                     </View>
                                 </ScrollView>
