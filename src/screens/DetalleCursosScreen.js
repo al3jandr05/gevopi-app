@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Alert, ProgressBarAndroid, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import colors from '../themes/colors';
 import styles from '../styles/detalleCursosStyles'; // We will create this file
+import * as Progress from 'react-native-progress';
 
 export default function DetalleCursosScreen() {
   const navigation = useNavigation();
@@ -104,13 +105,14 @@ export default function DetalleCursosScreen() {
             <Text style={styles.infoValue}>{curso.progreso}%</Text>
           </View>
           {Platform.OS === 'android' ? (
-            <ProgressBarAndroid
-              styleAttr="Horizontal"
-              indeterminate={false}
-              progress={curso.progreso / 100}
-              color={colors.naranjaFuerte}
-              style={styles.progressBar}
-            />
+
+              <Progress.Bar
+                  progress={curso.progreso ? curso.progreso / 100 : 0}
+                  width={null} // se adapta al contenedor
+                  color={colors.naranjaFuerte}
+                  height={10}
+                  style={styles.progressBar}
+              />
           ) : (
             <View style={styles.progressBariOS}>
               <View style={[styles.progressBarFilliOS, { width: `${curso.progreso}%` }]} />
