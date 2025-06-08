@@ -1,53 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import colors from '../themes/colors';
 import styles from '../styles/detalleCursosStyles'; // We will create this file
-import * as Progress from 'react-native-progress';
 
 export default function DetalleCursosScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const { curso: initialCourse } = route.params;
 
-  // State to manage the course details, especially for updating stage completion
+  // Asegúrate de que stages tengan status: 'No empezado' | 'En progreso' | 'Completado'
   const [curso, setCurso] = useState(initialCourse);
 
-  // Check if all stages are completed to enable the "Finalizar Curso" button
-  const allStagesCompleted = curso.stages.every(stage => stage.completed);
+  // Todas las etapas completadas
+  const allStagesCompleted = curso.stages.every(stage => stage.status === 'Completado');
 
-  // Function to mark a stage as completed
-  const handleCompleteStage = (stageId) => {
-    // Find the index of the current stage
-    const currentStageIndex = curso.stages.findIndex(s => s.id === stageId);
+  // Función para ciclar el estado de una etapa
+  const handleStageStatusCycle = (stageId) => {
+    const updatedStages = curso.stages.map(stage => {
+      if (stage.id === stageId) {
+        let nextStatus;
+        if (stage.status === 'No Empezado') nextStatus = 'En Progreso';
+        else if (stage.status === 'En Progreso') nextStatus = 'Completado';
+        else nextStatus = 'No Empezado';
+        return { ...stage, status: nextStatus };
+      }
+      return stage;
+    });
 
-    // If the current stage is not the first, check if the previous stage is completed
-    if (currentStageIndex > 0 && !curso.stages[currentStageIndex - 1].completed) {
-      Alert.alert(
-        'Etapa Anterior Incompleta',
-        'Por favor, completa la etapa anterior antes de avanzar.',
-        [{ text: 'OK' }]
-      );
-      return;
-    }
+    // Calcula progreso y estado general
+    const completedCount = updatedStages.filter(s => s.status === 'Completado').length;
+    const newProgreso = Math.floor((completedCount / updatedStages.length) * 100);
 
-    // Mark the current stage as completed
-    const updatedStages = curso.stages.map(stage =>
-      stage.id === stageId ? { ...stage, completed: true } : stage
-    );
-
-    // Update course status and progress if applicable
-    let newEstado = curso.estado;
-    let newProgreso = Math.floor((updatedStages.filter(s => s.completed).length / updatedStages.length) * 100);
-
-    if (newProgreso === 100) {
-      newEstado = 'Finalizado';
-    } else if (newProgreso > 0 && newProgreso < 100) {
-      newEstado = 'En progreso';
-    } else {
-      newEstado = 'Sin empezar'; // Should only happen if no stages are completed
-    }
+    let newEstado = 'No Empezado';
+    if (newProgreso === 100) newEstado = 'Finalizado';
+    else if (newProgreso > 0) newEstado = 'En Progreso';
 
     setCurso(prevCurso => ({
       ...prevCurso,
@@ -55,23 +43,17 @@ export default function DetalleCursosScreen() {
       estado: newEstado,
       progreso: newProgreso,
     }));
-
-    // In a real application, you would send this update to your backend here.
-    // Example: saveCourseProgress(curso.id, updatedStages, newEstado, newProgreso);
   };
 
-  // Function to finalize the course
+  // Función para finalizar el curso
   const handleFinalizeCourse = () => {
     if (allStagesCompleted) {
-      // Logic to mark the course as completely finished in your backend
-      // This might involve updating the course's status to 'Finalizado' if it's not already
       Alert.alert(
         'Curso Finalizado',
         `¡Has completado el curso "${curso.titulo}" con éxito!`,
         [{ text: 'OK' }]
       );
-      // You might want to navigate back or update the course list here
-      navigation.goBack(); // Or navigate to a 'CursosCompletados' screen
+      navigation.goBack();
     } else {
       Alert.alert(
         'Etapas Incompletas',
@@ -105,57 +87,78 @@ export default function DetalleCursosScreen() {
             <Text style={styles.infoValue}>{curso.progreso}%</Text>
           </View>
           {Platform.OS === 'android' ? (
-
-              <Progress.Bar
-                  progress={curso.progreso ? curso.progreso / 100 : 0}
-                  width={null} // se adapta al contenedor
-                  color={colors.naranjaFuerte}
-                  height={10}
-                  style={styles.progressBar}
-              />
+            <Progress.Bar
+              progress={curso.progreso ? curso.progreso / 100 : 0}
+              width={null}
+              color={colors.naranjaFuerte}
+              height={10}
+              style={styles.progressBar}
+            />
           ) : (
             <View style={styles.progressBariOS}>
               <View style={[styles.progressBarFilliOS, { width: `${curso.progreso}%` }]} />
             </View>
           )}
-
         </View>
-
 
         <View style={styles.progressContainer}>
           <Text style={styles.progressSectionTitle}>Etapas del Curso</Text>
           {curso.stages.map((stage, index) => (
             <View key={stage.id} style={styles.stepWrapper}>
               <View style={styles.stepLineContainer}>
-                <View style={[styles.stepCircle, stage.completed && styles.stepCircleCompleted]}>
-                  {stage.completed ? (
+                <View style={[
+                  styles.stepCircle,
+                  stage.status === 'Completado' && styles.stepCircleCompleted,
+                  stage.status === 'En Progreso' && styles.stepCircleInProgress,
+                ]}>
+                  {stage.status === 'Completado' ? (
                     <Ionicons name="checkmark-sharp" size={18} color={colors.blanco} />
                   ) : (
                     <Text style={styles.stepNumber}>{index + 1}</Text>
                   )}
                 </View>
                 {index < curso.stages.length - 1 && (
-                  <View style={[styles.stepLine, stage.completed && styles.stepLineCompleted]} />
+                  <View style={[
+                    styles.stepLine,
+                    stage.status === 'Completado' && styles.stepLineCompleted
+                  ]} />
                 )}
               </View>
               <TouchableOpacity
                 style={[
                   styles.stepContent,
-                  stage.completed && styles.stepContentCompleted,
-                  !stage.completed && index > 0 && !curso.stages[index - 1].completed && styles.stepContentDisabled // Disable if previous is not completed
+                  stage.status === 'Completado' && styles.stepContentCompleted,
+                  stage.status === 'En Progreso' && styles.stepContentInProgress,
                 ]}
-                onPress={() => handleCompleteStage(stage.id)}
-                disabled={stage.completed || (index > 0 && !curso.stages[index - 1].completed)} // Disable if completed or previous is not completed
+                onPress={() => handleStageStatusCycle(stage.id)}
               >
                 <View style={styles.stepTextContainer}>
-                  <Text style={[styles.stepTitle, stage.completed && styles.stepTitleCompleted]}>
+                  <Text style={[
+                    styles.stepTitle,
+                    stage.status === 'Completado' && styles.stepTitleCompleted,
+                    stage.status === 'En Progreso' && styles.stepTitleInProgress,
+                  ]}>
                     {stage.title}
                   </Text>
-                  <Text style={[styles.stepDescription, stage.completed && styles.stepDescriptionCompleted]}>
+                  <Text style={[
+                    styles.stepDescription,
+                    stage.status === 'Completado' && styles.stepDescriptionCompleted,
+                    stage.status === 'En Progreso' && styles.stepDescriptionInProgress,
+                  ]}>
                     {stage.description}
                   </Text>
+                  <Text
+                    style={[
+                      styles.stageStatusText,
+                      stage.status === 'No Empezado' && styles.stageStatusNoEmpezado,
+                      stage.status === 'En Progreso' && styles.stageStatusEnProgreso,
+                      stage.status === 'Completado' && styles.stageStatusCompletado,
+                    ]}
+                  >
+                    {stage.status}
+                  </Text>
                 </View>
-                {!stage.completed && (
+                {stage.status !== 'Completado' && (
                   <FontAwesome5 name="chevron-right" size={14} color={colors.gray} />
                 )}
               </TouchableOpacity>

@@ -196,24 +196,32 @@ export default function CursosScreen() {
         data={filtrados}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => {
-          let cardBorderColor = colors.verdeCritico; // Default for 'Sin empezar' or general
-          if (item.estado === 'Finalizado') {
-            cardBorderColor = colors.green; // Example for 'Finalizado'
-          } else if (item.estado === 'En progreso') {
-            cardBorderColor = colors.yellow; // Example for 'En progreso'
-          }
+          // Transforma stages a status: 'No Empezado' | 'En Progreso' | 'Completado'
+          const stagesWithStatus = item.stages.map(stage => ({
+            ...stage,
+            status: stage.completed === true
+              ? 'Completado'
+              : item.estado === 'En progreso'
+                ? 'En Progreso'
+                : 'No Empezado'
+          }));
+
+          // Prepara el curso para DetalleCursosScreen
+          const cursoDetalle = {
+            ...item,
+            stages: stagesWithStatus,
+          };
 
           return (
             <TouchableOpacity
-              style={styles.card }
-              onPress={() => navigation.navigate('DetalleCursos', { curso: item })} // Corrected navigation
+              style={styles.card}
+              onPress={() => navigation.navigate('DetalleCursos', { curso: cursoDetalle })}
             >
               <Text style={styles.cardTitle}>{item.titulo}</Text>
               <Text style={styles.cardSubtitle}>Estado: {item.estado}</Text>
               {item.progreso !== undefined && <Text style={styles.cardSubtitle}>Progreso: {item.progreso}%</Text>}
               {item.fechaInicio && <Text style={styles.cardFecha}>Inicio: {item.fechaInicio}</Text>}
               {item.fechaFin && <Text style={styles.cardFecha}>Fin: {item.fechaFin}</Text>}
-              {/* Removed the "Ver detalles" button as the whole card is now pressable */}
             </TouchableOpacity>
           );
         }}

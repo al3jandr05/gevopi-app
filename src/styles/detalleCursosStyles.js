@@ -151,6 +151,15 @@ export default StyleSheet.create({
     backgroundColor: colors.card2,
     opacity: 0.7,
   },
+  stepContentInProgress: {
+    backgroundColor: colors.naranjaFuerte, // Fondo llamativo para "En progreso"
+    borderColor: colors.naranjaFuerte,
+    shadowColor: colors.naranjaFuerte,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
+  },
   stepTextContainer: {
     flex: 1, // Allows title and description to wrap
     marginRight: 10, // Space before chevron
@@ -164,12 +173,57 @@ export default StyleSheet.create({
   stepTitleCompleted: {
     color: colors.blanco,
   },
+  stepTitleInProgress: {
+    color: colors.blanco,
+  },
   stepDescription: {
     fontSize: 13,
     color: colors.textoPrincipal,
   },
   stepDescriptionCompleted: {
     color: colors.blanco,
+  },
+  stepDescriptionInProgress: {
+    color: colors.blanco,
+  },
+  stepCircleInProgress: {
+    backgroundColor: colors.naranjaFuerte,
+    borderColor: colors.naranjaFuerte,
+  },
+  // Estilos para el texto del estado de la etapa
+  stageStatusText: {
+    marginTop: 8,
+    fontWeight: 'bold',
+    fontSize: 13,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  stageStatusNoEmpezado: {
+    backgroundColor: '#fff0f0',
+    color: '#d32f2f',
+    borderWidth: 1,
+    borderColor: '#d32f2f',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  stageStatusEnProgreso: {
+    backgroundColor: '#fffbe6',
+    color: '#ff9800',
+    borderWidth: 1,
+    borderColor: '#ff9800',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  stageStatusCompletado: {
+    backgroundColor: '#e6ffe6',
+    color: '#388e3c',
+    borderWidth: 1,
+    borderColor: '#388e3c',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   finishButton: {
     backgroundColor: colors.amarillo,
