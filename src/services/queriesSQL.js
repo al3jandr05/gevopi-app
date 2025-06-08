@@ -57,3 +57,29 @@ export const GET_EVALUACIONES = gql`
     }
   }
 `;
+
+export const obtenerCursosPorVoluntarioId = async (id) => {
+  const { data } = await client.query({
+    query: gql`
+      query ObtenerCursosVoluntario($id: Int!) {
+        obtenerCursosVoluntario(id: $id) {
+          id
+          nombre
+          descripcion
+          etapas {
+            id
+            nombre
+            orden
+            estado
+            fechaInicio
+            fechaFinalizacion
+          }
+        }
+      }
+    `,
+    variables: { id },
+  });
+
+  return data.obtenerCursosVoluntario;
+};
+
