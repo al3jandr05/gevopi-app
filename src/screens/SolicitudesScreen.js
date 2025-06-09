@@ -248,7 +248,7 @@ export default function SolicitudesScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity onPress={aplicarFiltros} style={styles.applyButton}>
-              <Text style={styles.applyButtonText}>Aplicar Filtros</Text>
+              <Text style={styles.applyButtonText}>APLICAR FILTROS</Text>
             </TouchableOpacity>
           </Animated.View>
         </View>

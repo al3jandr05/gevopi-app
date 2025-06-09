@@ -28,7 +28,7 @@ import { getVoluntarioByUsuarioId } from '../services/voluntarioService';
 import { getLoggedCi, logout } from '../services/authService';
 import { getVoluntarioByCi } from '../services/voluntarioService';
 import { crearSolicitudAyuda, crearHistorialUbicacion } from '../services/mutationsNOSQL';
-import { obtenerReportePorVoluntarioId,obtenerCursosPorVoluntarioId  } from '../services/queriesSQL';
+import { obtenerReportePorVoluntarioId, obtenerCursosPorVoluntarioId } from '../services/queriesSQL';
 
 const { width } = Dimensions.get('window');
 const { height } = Dimensions.get('window');
@@ -50,15 +50,19 @@ export default function PerfilScreen() {
       titulo: 'Historial Clínico',
       screen: 'Historial',
       items: reporte
-          ? [{ titulo: 'Resumen Físico', descripcion: reporte.resumenFisico, fecha: new Date(reporte.fechaGenerado).toLocaleDateString() }]
-          : [],
+        ? [{
+          titulo: 'Resumen Físico',
+          descripcion: reporte.resumenFisico,
+          fecha: new Date(reporte.fechaGenerado).toLocaleDateString()
+        }].slice(0, 3)
+        : [],
     },
     {
       titulo: 'Historial Psicológico',
       screen: 'Historial',
       items: reporte
-          ? [{ titulo: 'Resumen Emocional', descripcion: reporte.resumenEmocional, fecha: new Date(reporte.fechaGenerado).toLocaleDateString() }]
-          : [],
+        ? [{ titulo: 'Resumen Emocional', descripcion: reporte.resumenEmocional, fecha: new Date(reporte.fechaGenerado).toLocaleDateString() }].slice(0, 3)
+        : [],
     },
   ];
 
@@ -73,7 +77,7 @@ export default function PerfilScreen() {
       items: reporte?.necesidades?.map((n) => ({
         titulo: n.tipo,
         descripcion: n.descripcion,
-      })) || [],
+      })).slice(0, 3) || [],
     },
     {
       titulo: 'Capacitaciones',
@@ -81,7 +85,7 @@ export default function PerfilScreen() {
       items: reporte?.capacitaciones?.map((c) => ({
         titulo: c.nombre,
         descripcion: c.descripcion,
-      })) || [],
+      })).slice(0, 3) || [],
     },
   ];
 
@@ -125,7 +129,7 @@ export default function PerfilScreen() {
       // 3. Convertir nivel a ENUM
       const nivelNum = parseInt(nivel);
       const nivelEnum =
-          nivelNum <= 2 ? 'BAJO' : nivelNum <= 3 ? 'MEDIO' : 'ALTO';
+        nivelNum <= 2 ? 'BAJO' : nivelNum <= 3 ? 'MEDIO' : 'ALTO';
 
       // 4. Verificar ID
       if (!voluntario || !voluntario.id) {
@@ -157,13 +161,13 @@ export default function PerfilScreen() {
   };
 
   useFocusEffect(
-      React.useCallback(() => {
-        fadeAnim.setValue(0);
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          useNativeDriver: true,
-        }).start();
-      }, [])
+    React.useCallback(() => {
+      fadeAnim.setValue(0);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+      }).start();
+    }, [])
   );
 
   useEffect(() => {
@@ -223,9 +227,9 @@ export default function PerfilScreen() {
         try {
           const location = await Location.getCurrentPositionAsync({});
           await crearHistorialUbicacion(
-              location.coords.latitude,
-              location.coords.longitude,
-              voluntario.id.toString()
+            location.coords.latitude,
+            location.coords.longitude,
+            voluntario.id.toString()
           );
         } catch (err) {
           console.error('Error guardando ubicación:', err.message);
@@ -267,27 +271,27 @@ export default function PerfilScreen() {
 
   useEffect(() => {
     const keyboardWillShow = Keyboard.addListener(
-        Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-        () => {
-          setKeyboardVisible(true);
-          Animated.timing(modalOffsetAnim, {
-            toValue: -200, // Ajusta este valor según necesites
-            duration: 300,
-            useNativeDriver: true,
-          }).start();
-        }
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => {
+        setKeyboardVisible(true);
+        Animated.timing(modalOffsetAnim, {
+          toValue: -200, // Ajusta este valor según necesites
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      }
     );
 
     const keyboardWillHide = Keyboard.addListener(
-        Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
-        () => {
-          setKeyboardVisible(false);
-          Animated.timing(modalOffsetAnim, {
-            toValue: 0,
-            duration: 250,
-            useNativeDriver: true,
-          }).start();
-        }
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        setKeyboardVisible(false);
+        Animated.timing(modalOffsetAnim, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }).start();
+      }
     );
 
     return () => {
@@ -308,79 +312,79 @@ export default function PerfilScreen() {
 
   const closeEmergencia = () => {
     Animated.timing(panelAnim, { toValue: 1000, duration: 300, useNativeDriver: true }).start(() =>
-        setEmergenciaVisible(false)
+      setEmergenciaVisible(false)
     );
   };
 
   const closeInfo = () => {
     Animated.timing(panelAnim, { toValue: 1000, duration: 300, useNativeDriver: true }).start(() =>
-        setInfoVisible(false),
+      setInfoVisible(false),
     );
   };
 
   const renderDots = (count, animsArray) => (
-      <View style={styles.dotsContainer}>
-        {animsArray.slice(0, count).map((anim, i) => {
-          const backgroundColor = anim.interpolate({
-            inputRange: [0, 1],
-            outputRange: [colors.blanco, colors.naranjaFuerte],
-          });
+    <View style={styles.dotsContainer}>
+      {animsArray.slice(0, count).map((anim, i) => {
+        const backgroundColor = anim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [colors.blanco, colors.naranjaFuerte],
+        });
 
-          return <Animated.View key={i} style={[styles.dot, { backgroundColor }]} />;
-        })}
-      </View>
+        return <Animated.View key={i} style={[styles.dot, { backgroundColor }]} />;
+      })}
+    </View>
   );
 
   const renderCarouselItem = ({ item }) => (
-      <TouchableOpacity
-          style={styles.carouselItem}
-          onPress={() => navigation.navigate(item.screen)}
-      >
-        <Text style={styles.carouselSectionTitle}>{item.titulo}</Text>
-        {item.items && item.items.length > 0 ? (
-            item.items.map((subItem, index) => (
-                <View key={index} style={styles.cardContainer}>
-                  <View style={styles.cardHeader}>
-                    <Text style={styles.cardTitle}>{subItem.titulo}</Text>
-                    {subItem.fecha && (
-                        <View style={styles.dateContainer}>
-                          <FontAwesome5 name="calendar-alt" size={12} color={colors.gray} />
-                          <Text style={styles.cardDate}>{subItem.fecha}</Text>
-                        </View>
-                    )}
-                  </View>
-                  <Text style={styles.cardDescription}>{subItem.descripcion}</Text>
+    <TouchableOpacity
+      style={styles.carouselItem}
+      onPress={() => navigation.navigate(item.screen)}
+    >
+      <Text style={styles.carouselSectionTitle}>{item.titulo}</Text>
+      {item.items && item.items.length > 0 ? (
+        item.items.map((subItem, index) => (
+          <View key={index} style={styles.cardContainer}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitle}>{subItem.titulo}</Text>
+              {subItem.fecha && (
+                <View style={styles.dateContainer}>
+                  <FontAwesome5 name="calendar-alt" size={12} color={colors.gray} />
+                  <Text style={styles.cardDate}>{subItem.fecha}</Text>
                 </View>
-            ))
-        ) : (
-            <View style={styles.emptyStateContainer}>
-              <FontAwesome5 name="inbox" size={24} color={colors.gray} />
-              <Text style={styles.emptyStateText}>No hay información para mostrar</Text>
+              )}
             </View>
-        )}
-      </TouchableOpacity>
+            <Text style={styles.cardDescription}>{subItem.descripcion}</Text>
+          </View>
+        ))
+      ) : (
+        <View style={styles.emptyStateContainer}>
+          <FontAwesome5 name="inbox" size={24} color={colors.gray} />
+          <Text style={styles.emptyStateText}>No hay información para mostrar</Text>
+        </View>
+      )}
+    </TouchableOpacity>
   );
 
   const handleLogout = () => {
     Alert.alert(
-        "Cerrar Sesión",
-        "¿Seguro que quieres cerrar sesión?",
-        [
-          {
-            text: "No",
-            style: "cancel"
-          },
-          {
-            text: "Sí",
-            onPress: () => {
-              logout();
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Login' }],
-              });
-            }
+      "Cerrar Sesión",
+      "¿Seguro que quieres cerrar sesión?",
+      [
+        {
+          text: "No",
+          style: "cancel"
+        },
+        {
+          text: "Sí",
+          onPress: () => {
+            logout();
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Login' }],
+            });
           }
-        ]
+        }
+      ]
     );
   };
 
@@ -394,266 +398,268 @@ export default function PerfilScreen() {
 
   if (loadingVoluntario) {
     return (
-        <View style={[styles.loadingContainer, { backgroundColor: colors.fondo }]}>
-          <View style={styles.loadingBox}>
-            <ActivityIndicator size="large" color={colors.amarillo} />
-            <Text style={styles.loadingText}>Cargando tu perfil...</Text>
-            <Text style={styles.loadingSubtext}>Por favor espera un momento</Text>
-          </View>
+      <View style={[styles.loadingContainer, { backgroundColor: colors.fondo }]}>
+        <View style={styles.loadingBox}>
+          <ActivityIndicator size="large" color={colors.amarillo} />
+          <Text style={styles.loadingText}>Cargando tu perfil...</Text>
+          <Text style={styles.loadingSubtext}>Por favor espera un momento</Text>
         </View>
+      </View>
     );
   }
 
   if (!voluntario) {
     return (
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Voluntario no encontrado.</Text>
-          <TouchableOpacity
-              style={styles.logoutButton2}
-              onPress={handleUserNotFound}
-          >
-            <Text style={styles.logoutText}>Volver al Login</Text>
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Voluntario no encontrado.</Text>
+        <TouchableOpacity
+          style={styles.logoutButton2}
+          onPress={handleUserNotFound}
+        >
+          <Text style={styles.logoutText}>Volver al Login</Text>
 
-          </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
+      </View>
     );
   }
 
   return (
-      <Animated.View style={[styles.container, { backgroundColor: colors.fondo, opacity: fadeAnim }]}>
-        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
-          <Animated.View style={[styles.greenContainer, { transform: [{ translateY: blueAnim }] }]} />
+    <Animated.View style={[styles.container, { backgroundColor: colors.fondo, opacity: fadeAnim }]}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+        <Animated.View style={[styles.greenContainer, { transform: [{ translateY: blueAnim }] }]} />
 
-          <View style={{ flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 20, paddingTop: 10 }}>
-            <TouchableOpacity
-                style={styles.logoutButton}
-                onPress={handleLogout}
-            >
-              <Ionicons name="log-out-outline" size={24} color={colors.amarillo} />
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 20, paddingTop: 10 }}>
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={handleLogout}
+          >
+            <Ionicons name="log-out-outline" size={24} color={colors.amarillo} />
+          </TouchableOpacity>
+        </View>
+        {/* Perfil */}
+        <View style={styles.perfilContainer}>
+          <View style={styles.avatarWrapper}>
+            {voluntario.fotoPerfil ? (
+              <Image source={{ uri: voluntario.fotoPerfil }} style={styles.avatarImage} />
+            ) : (
+              <View style={styles.avatarPlaceholder}>
+                <Text style={styles.avatarInitial}>
+                  {voluntario.nombre?.charAt(0).toUpperCase() ?? '-'}
+                </Text>
+              </View>
+            )}
+            <View style={[styles.statusDot, { backgroundColor: 'green' }]} />
+          </View>
+
+          <Text style={styles.name}>{voluntario.nombre} {voluntario.apellido}</Text>
+
+          <View style={styles.buttonsRow}>
+            <TouchableOpacity style={styles.circleButton} onPress={openInfo}>
+              <Ionicons name="information-circle-outline" size={24} color={colors.amarillo} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.circleButton} onPress={() => navigation.navigate("Evaluaciones")}>
+              <Ionicons name="document-text-outline" size={24} color={colors.amarillo} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.circleButton} onPress={() => navigation.navigate("Solicitudes")}>
+              <Ionicons name="file-tray-full-outline" size={24} color={colors.amarillo} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.emergenciaButton} onPress={openEmergencia}>
+              <Ionicons name="megaphone-outline" size={24} color="white" />
             </TouchableOpacity>
           </View>
-          {/* Perfil */}
-          <View style={styles.perfilContainer}>
-            <View style={styles.avatarWrapper}>
-              {voluntario.fotoPerfil ? (
-                  <Image source={{ uri: voluntario.fotoPerfil }} style={styles.avatarImage} />
-              ) : (
-                  <View style={styles.avatarPlaceholder}>
-                    <Text style={styles.avatarInitial}>
-                      {voluntario.nombre?.charAt(0).toUpperCase() ?? '-'}
-                    </Text>
+
+        </View>
+
+        {/* Historial */}
+        <TouchableOpacity style={styles.sectionCard} activeOpacity={0.9} onPress={() => navigation.navigate('Historial')}>
+          <Animated.FlatList
+            data={historialData}
+            renderItem={renderCarouselItem}
+            keyExtractor={(item, index) => index.toString()}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollXHistorial } } }], { useNativeDriver: false })}
+            onMomentumScrollEnd={(e) => {
+              const newIndex = Math.round(e.nativeEvent.contentOffset.x / (width - 64));
+              setHistorialIndex(newIndex);
+            }}
+            scrollEventThrottle={16}
+          />
+          {renderDots(historialData.length, dotAnimsHistorial.current)}
+        </TouchableOpacity>
+
+        {/* Necesidades y Capacitaciones */}
+        <TouchableOpacity style={styles.sectionCard} activeOpacity={0.9} onPress={() => navigation.navigate('NecesidadesCapacitaciones')}>
+          <Animated.FlatList
+            data={necesidadesData}
+            renderItem={renderCarouselItem}
+            keyExtractor={(item, index) => index.toString()}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollXNecesidades } } }], { useNativeDriver: false })}
+            onMomentumScrollEnd={(e) => {
+              const newIndex = Math.round(e.nativeEvent.contentOffset.x / (width - 64));
+              setNecesidadesIndex(newIndex);
+            }}
+            scrollEventThrottle={16}
+          />
+          {renderDots(necesidadesData.length, dotAnimsNecesidades.current)}
+        </TouchableOpacity>
+
+        {/* Cursos Asignados */}
+        <TouchableOpacity
+          style={styles.sectionCard}
+          onPress={() => navigation.navigate('Cursos')}
+        >
+          <Text style={styles.carouselSectionTitle}>Cursos Asignados</Text>
+          {cursosAsignados && cursosAsignados.length > 0 ? (
+            cursosAsignados
+              .slice(0, 3) 
+              .map((curso, index) => (
+                <View key={index} style={styles.cardContainer}>
+                  <View style={styles.cardHeader}>
+                    <Text style={styles.cardTitle}>{curso.nombre}</Text>
                   </View>
-              )}
-              <View style={[styles.statusDot, { backgroundColor: 'green' }]} />
-            </View>
-
-            <Text style={styles.name}>{voluntario.nombre} {voluntario.apellido}</Text>
-
-            <View style={styles.buttonsRow}>
-              <TouchableOpacity style={styles.circleButton} onPress={openInfo}>
-                <Ionicons name="information-circle-outline" size={24} color={colors.blanco} />
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.circleButton} onPress={() => navigation.navigate("Evaluaciones")}>
-                <Ionicons name="document-text-outline" size={24} color={colors.blanco} />
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.circleButton} onPress={() => navigation.navigate("Solicitudes")}>
-                <Ionicons name="file-tray-full-outline" size={24} color={colors.blanco} />
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.emergenciaButton} onPress={openEmergencia}>
-                <Ionicons name="megaphone-outline" size={24} color="white" />
-              </TouchableOpacity>
-            </View>
-
-          </View>
-
-          {/* Historial */}
-          <TouchableOpacity style={styles.sectionCard} activeOpacity={0.9} onPress={() => navigation.navigate('Historial')}>
-            <Animated.FlatList
-                data={historialData}
-                renderItem={renderCarouselItem}
-                keyExtractor={(item, index) => index.toString()}
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollXHistorial } } }], { useNativeDriver: false })}
-                onMomentumScrollEnd={(e) => {
-                  const newIndex = Math.round(e.nativeEvent.contentOffset.x / (width - 64));
-                  setHistorialIndex(newIndex);
-                }}
-                scrollEventThrottle={16}
-            />
-            {renderDots(historialData.length, dotAnimsHistorial.current)}
-          </TouchableOpacity>
-
-          {/* Necesidades y Capacitaciones */}
-          <TouchableOpacity style={styles.sectionCard} activeOpacity={0.9} onPress={() => navigation.navigate('NecesidadesCapacitaciones')}>
-            <Animated.FlatList
-                data={necesidadesData}
-                renderItem={renderCarouselItem}
-                keyExtractor={(item, index) => index.toString()}
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollXNecesidades } } }], { useNativeDriver: false })}
-                onMomentumScrollEnd={(e) => {
-                  const newIndex = Math.round(e.nativeEvent.contentOffset.x / (width - 64));
-                  setNecesidadesIndex(newIndex);
-                }}
-                scrollEventThrottle={16}
-            />
-            {renderDots(necesidadesData.length, dotAnimsNecesidades.current)}
-          </TouchableOpacity>
-
-          {/* Cursos Asignados */}
-          <TouchableOpacity
-              style={styles.sectionCard}
-              onPress={() => navigation.navigate('Cursos')}
-          >
-            <Text style={styles.carouselSectionTitle}>Cursos Asignados</Text>
-            {cursosAsignados && cursosAsignados.length > 0 ? (
-                cursosAsignados.map((curso, index) => (
-                    <View key={index} style={styles.cardContainer}>
-                      <View style={styles.cardHeader}>
-                        <Text style={styles.cardTitle}>{curso.nombre}</Text>
-                      </View>
-                      <Text style={styles.cardDescription}>{curso.descripcion}</Text>
-                    </View>
-                ))
-            ) : (
-                <View style={styles.emptyStateContainer}>
-                  <FontAwesome5 name="inbox" size={24} color={colors.gray} />
-                  <Text style={styles.emptyStateText}>No hay cursos asignados</Text>
+                  <Text style={styles.cardDescription}>{curso.descripcion}</Text>
                 </View>
-            )}
-          </TouchableOpacity>
-
-
-
-        </ScrollView>
-
-        {/* Modal Información Voluntario */}
-        <Modal transparent visible={infoVisible} animationType="fade">
-          <Pressable style={styles.modalBackdrop} onPress={closeInfo} />
-          <Animated.View style={[styles.modalContent, { transform: [{ translateY: panelAnim }] }]}>
-            <Text style={styles.modalTitle}>Información del Voluntario</Text>
-
-            <View style={styles.infoRow}>
-              <FontAwesome5 name="user" size={20} color={colors.amarillo} />
-              <Text style={styles.infoText}>{voluntario.nombre} {voluntario.apellido}</Text>
+              ))
+          ) : (
+            <View style={styles.emptyStateContainer}>
+              <FontAwesome5 name="inbox" size={24} color={colors.gray} />
+              <Text style={styles.emptyStateText}>No hay cursos asignados</Text>
             </View>
-            <View style={styles.infoRow}>
-              <FontAwesome5 name="id-card" size={20} color={colors.amarillo} />
-              <Text style={styles.infoText}>{voluntario.ci}</Text>
-            </View>
-            <View style={styles.infoRow}>
-              <FontAwesome5 name="phone" size={20} color={colors.amarillo} />
-              <Text style={styles.infoText}>{voluntario.telefono}</Text>
-            </View>
-            <View style={styles.infoRow}>
-              <FontAwesome5 name="tint" size={20} color={colors.amarillo} />
-              <Text style={styles.infoText}>{voluntario.tipo_sangre}</Text>
-            </View>
+          )}
+        </TouchableOpacity>
+
+
+
+      </ScrollView>
+
+      {/* Modal Información Voluntario */}
+      <Modal transparent visible={infoVisible} animationType="fade">
+        <Pressable style={styles.modalBackdrop} onPress={closeInfo} />
+        <Animated.View style={[styles.modalContent, { transform: [{ translateY: panelAnim }] }]}>
+          <Text style={styles.modalTitle}>Información del Voluntario</Text>
+
+          <View style={styles.infoRow}>
+            <FontAwesome5 name="user" size={20} color={colors.amarillo} />
+            <Text style={styles.infoText}>{voluntario.nombre} {voluntario.apellido}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <FontAwesome5 name="id-card" size={20} color={colors.amarillo} />
+            <Text style={styles.infoText}>{voluntario.ci}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <FontAwesome5 name="phone" size={20} color={colors.amarillo} />
+            <Text style={styles.infoText}>{voluntario.telefono}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <FontAwesome5 name="tint" size={20} color={colors.amarillo} />
+            <Text style={styles.infoText}>{voluntario.tipo_sangre}</Text>
+          </View>
+        </Animated.View>
+      </Modal>
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <Modal transparent visible={emergenciaVisible} animationType="fade">
+          <Pressable style={styles.modalBackdrop} onPress={closeEmergencia} />
+
+          <Animated.View
+            style={[
+              styles.modalContent,
+              {
+                transform: [
+                  { translateY: panelAnim },
+                  { translateY: modalOffsetAnim }
+                ]
+              }
+            ]}
+          >
+            <Text style={styles.modalTitle}>Reportar Emergencia</Text>
+
+            <ScrollView
+              contentContainerStyle={styles.modalScrollContent}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              {/* Tipo de emergencia */}
+              <View style={styles.modalSection}>
+                <Text style={styles.modalLabel}>Tipo de emergencia</Text>
+                <Dropdown
+                  style={styles.dropdown}
+                  placeholderStyle={styles.placeholderStyle}
+                  selectedTextStyle={styles.selectedTextStyle}
+                  data={[
+                    { label: 'Físico', value: 'Fisico' },
+                    { label: 'Emocional', value: 'Emocional' },
+                    { label: 'Recurso', value: 'Recurso' },
+                  ]}
+                  maxHeight={200}
+                  labelField="label"
+                  valueField="value"
+                  placeholder="Selecciona un tipo"
+                  value={tipo}
+                  onChange={item => setTipo(item.value)}
+                />
+              </View>
+
+              {/* Nivel de emergencia */}
+              <View style={styles.modalSection}>
+                <Text style={styles.modalLabel}>Nivel de emergencia</Text>
+                <Dropdown
+                  style={styles.dropdown}
+                  placeholderStyle={styles.placeholderStyle}
+                  selectedTextStyle={styles.selectedTextStyle}
+                  data={[
+                    { label: 'Bajo', value: '1' },
+                    { label: 'Medio', value: '3' },
+                    { label: 'Alto', value: '5' },
+                  ]}
+                  maxHeight={200}
+                  labelField="label"
+                  valueField="value"
+                  placeholder="Selecciona un nivel"
+                  value={nivel}
+                  onChange={item => setNivel(item.value)}
+                />
+              </View>
+
+              {/* Descripción */}
+              <View style={styles.modalSection}>
+                <Text style={styles.modalLabel}>Descripción</Text>
+                <TextInput
+                  placeholder="Describe brevemente la emergencia..."
+                  style={[styles.input, styles.descripcionInput]}
+                  value={descripcion}
+                  onChangeText={setDescripcion}
+                  multiline={false}
+                  returnKeyType="done"
+                  blurOnSubmit={true}
+                  onSubmitEditing={() => {
+                    Keyboard.dismiss();
+                  }}
+                />
+              </View>
+
+              {/* Botón */}
+              <TouchableOpacity
+                style={styles.enviarButton}
+                onPress={handleEnviarSolicitud}
+              >
+                <Text style={styles.enviarButtonText}>ENVIAR</Text>
+              </TouchableOpacity>
+            </ScrollView>
           </Animated.View>
         </Modal>
-
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={{ flex: 1 }}
-        >
-          <Modal transparent visible={emergenciaVisible} animationType="fade">
-            <Pressable style={styles.modalBackdrop} onPress={closeEmergencia} />
-
-            <Animated.View
-                style={[
-                  styles.modalContent,
-                  {
-                    transform: [
-                      { translateY: panelAnim },
-                      { translateY: modalOffsetAnim }
-                    ]
-                  }
-                ]}
-            >
-              <Text style={styles.modalTitle}>Reportar Emergencia</Text>
-
-              <ScrollView
-                  contentContainerStyle={styles.modalScrollContent}
-                  showsVerticalScrollIndicator={false}
-                  keyboardShouldPersistTaps="handled"
-              >
-                {/* Tipo de emergencia */}
-                <View style={styles.modalSection}>
-                  <Text style={styles.modalLabel}>Tipo de emergencia</Text>
-                  <Dropdown
-                      style={styles.dropdown}
-                      placeholderStyle={styles.placeholderStyle}
-                      selectedTextStyle={styles.selectedTextStyle}
-                      data={[
-                        { label: 'Físico', value: 'Fisico' },
-                        { label: 'Emocional', value: 'Emocional' },
-                        { label: 'Recurso', value: 'Recurso' },
-                      ]}
-                      maxHeight={200}
-                      labelField="label"
-                      valueField="value"
-                      placeholder="Selecciona un tipo"
-                      value={tipo}
-                      onChange={item => setTipo(item.value)}
-                  />
-                </View>
-
-                {/* Nivel de emergencia */}
-                <View style={styles.modalSection}>
-                  <Text style={styles.modalLabel}>Nivel de emergencia</Text>
-                  <Dropdown
-                      style={styles.dropdown}
-                      placeholderStyle={styles.placeholderStyle}
-                      selectedTextStyle={styles.selectedTextStyle}
-                      data={[
-                        { label: 'Bajo', value: '1' },
-                        { label: 'Medio', value: '3' },
-                        { label: 'Alto', value: '5' },
-                      ]}
-                      maxHeight={200}
-                      labelField="label"
-                      valueField="value"
-                      placeholder="Selecciona un nivel"
-                      value={nivel}
-                      onChange={item => setNivel(item.value)}
-                  />
-                </View>
-
-                {/* Descripción */}
-                <View style={styles.modalSection}>
-                  <Text style={styles.modalLabel}>Descripción</Text>
-                  <TextInput
-                      placeholder="Describe brevemente la emergencia..."
-                      style={[styles.input, styles.descripcionInput]}
-                      value={descripcion}
-                      onChangeText={setDescripcion}
-                      multiline={false}
-                      returnKeyType="done"
-                      blurOnSubmit={true}
-                      onSubmitEditing={() => {
-                        Keyboard.dismiss();
-                      }}
-                  />
-                </View>
-
-                {/* Botón */}
-                <TouchableOpacity
-                    style={styles.enviarButton}
-                    onPress={handleEnviarSolicitud}
-                >
-                  <Text style={styles.enviarButtonText}>ENVIAR</Text>
-                </TouchableOpacity>
-              </ScrollView>
-            </Animated.View>
-          </Modal>
-        </KeyboardAvoidingView>
-      </Animated.View>
+      </KeyboardAvoidingView>
+    </Animated.View>
   );
 }

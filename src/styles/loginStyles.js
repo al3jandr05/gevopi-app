@@ -99,7 +99,7 @@ export default StyleSheet.create({
     padding: 16,
   },
   buttonText: {
-    color: colors.white,
+    color: colors.blanco,
     fontWeight: '600',
     fontSize: 16,
     marginRight: 8,

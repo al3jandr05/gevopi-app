@@ -147,7 +147,7 @@ export default function DetalleSolicitudScreen() {
                                                 alignItems: 'center',
                                             }}
                                         >
-                                            <Text style={{ color: 'blanco', fontWeight: 'bold' }}>Compartir por WhatsApp</Text>
+                                            <Text style={{ color:colors.blanco, fontWeight: 'bold' }}>COMPARTIR POR WHATSAPP</Text>
                                         </TouchableOpacity>
                                     </View>
                                 </ScrollView>

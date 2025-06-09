@@ -1,10 +1,10 @@
 const colors = {
-  fondo: 'rgb(66, 66, 66)',
+  fondo: '#ffffff',
   card: 'rgba(255, 255, 255, 0.7)',
   card2: 'rgba(255, 255, 255, 0.9)',
   negro: '#000000',
   naranjaFuerte: '#f8520b',
-  naranjaSuave: '#fb8755',
+  naranjaSuave: '#ff7c39',
   amarillo: '#ffa100',
   amarilloHover: '#ffc867',
   gris: '#272525',

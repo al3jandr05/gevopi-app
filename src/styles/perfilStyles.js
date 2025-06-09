@@ -81,6 +81,7 @@ export default StyleSheet.create({
     backgroundColor: colors.card,
     margin: 16,
     padding: 16,
+  
     borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -228,7 +229,7 @@ export default StyleSheet.create({
     marginBottom: 6,
     borderColor: colors.gray,
     borderWidth: 1,
-    color: colors.amarillo,
+    color: colors.gray,
     fontSize: 15,
     height: 50,
     backgroundColor: colors.blanco,
