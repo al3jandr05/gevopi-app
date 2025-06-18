@@ -452,6 +452,8 @@ export default function PerfilScreen() {
           </View>
 
           <Text style={styles.name}>{voluntario.nombre} {voluntario.apellido}</Text>
+          <Text style={styles.name}>{voluntario.rol_id === 3 ? 'Comunario' : 'Voluntario'}</Text>
+
 
           <View style={styles.buttonsRow}>
             <TouchableOpacity style={styles.circleButton} onPress={openInfo}>
