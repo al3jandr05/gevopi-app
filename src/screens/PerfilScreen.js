@@ -452,8 +452,21 @@ export default function PerfilScreen() {
           </View>
 
           <Text style={styles.name}>{voluntario.nombre} {voluntario.apellido}</Text>
-          <Text style={styles.name}>{voluntario.rol_id === 3 ? 'Comunario' : 'Voluntario'}</Text>
-
+          
+          {/* Rol del voluntario con diseño mejorado */}
+          <View style={styles.roleContainer}>
+            <View style={styles.roleBadge}>
+              <FontAwesome5 
+                name={voluntario.rol_id === 3 ? "users" : "user-friends"} 
+                size={14} 
+                color={colors.blanco} 
+                style={styles.roleIcon}
+              />
+              <Text style={styles.roleText}>
+                {voluntario.rol_id === 3 ? 'Comunario' : 'Voluntario'}
+              </Text>
+            </View>
+          </View>
 
           <View style={styles.buttonsRow}>
             <TouchableOpacity style={styles.circleButton} onPress={openInfo}>

@@ -422,4 +422,38 @@ export default StyleSheet.create({
     fontSize: 16,
     marginRight: 8,
   },
+  
+  // Estilos para el rol del voluntario
+  roleContainer: {
+    marginBottom: 15,
+    alignItems: 'center',
+  },
+  roleBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  roleIcon: {
+    marginRight: 8,
+  },
+  roleText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.blanco,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
 });

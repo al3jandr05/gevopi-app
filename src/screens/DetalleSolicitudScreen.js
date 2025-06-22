@@ -23,7 +23,7 @@ export default function DetalleSolicitudScreen() {
     const bottomSheetRef = useRef(null);
     const [isExpanded, setIsExpanded] = useState(false);
 
-    const snapPoints = useMemo(() => ['12%', '30%'], []);
+    const snapPoints = useMemo(() => ['12%', '40%'], []);
 
     const handleSheetChanges = useCallback((index) => {
         console.log('BottomSheet index changed to:', index);
@@ -31,6 +31,14 @@ export default function DetalleSolicitudScreen() {
     }, []);
 
     const toggleBottomSheet = useCallback(() => {
+        if (isExpanded) {
+            bottomSheetRef.current?.collapse();
+        } else {
+            bottomSheetRef.current?.expand();
+        }
+    }, [isExpanded]);
+
+    const handleBottomSheetPress = useCallback(() => {
         if (isExpanded) {
             bottomSheetRef.current?.collapse();
         } else {
@@ -103,7 +111,7 @@ export default function DetalleSolicitudScreen() {
                     }}
                 >
                     <BottomSheetView style={{ flex: 1 }}>
-                        <TouchableWithoutFeedback onPress={toggleBottomSheet}>
+                        <TouchableWithoutFeedback onPress={handleBottomSheetPress}>
                             <View style={{ flex: 1 }}>
                                 <View style={styles.modalPreview}>
                                     <Text style={styles.modalTitle}>Detalles de la Solicitud</Text>
