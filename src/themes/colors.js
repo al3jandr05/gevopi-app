@@ -1,5 +1,5 @@
 const colors = {
-  fondo: '#ffffff',
+  fondo: '#e0e0e0',
   card: 'rgba(255, 255, 255, 0.7)',
   card2: 'rgba(255, 255, 255, 0.9)',
   negro: '#000000',
